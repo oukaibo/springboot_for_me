@@ -211,7 +211,8 @@ function fileUploadSetStoreName(storeCodeArr) {
 				layer.alert(result.msg);
 			}
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 }
 
@@ -615,7 +616,8 @@ function setNewApproval() {
 					}
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	} else {
 		$("[name='extraApproval']").val("0");
@@ -639,7 +641,8 @@ function setBussinessOption() {
 			common.initSelect();
 			setBussinessChildOption("[name='subject_type']");
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 	console.log("setBussinessOption:" + (Date.now() - num));
 }
@@ -670,7 +673,8 @@ function setBussinessChildOption(obj) {
 				layui.form.render("select");
 			}
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 	setReimburseTypeByBusinessName("[name='bussiness_name']");
 	console.log("setBussinessChildOption:" + (Date.now() - num));
@@ -702,7 +706,8 @@ function setReimburseTypeByBusinessName(obj) {
 					return;
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	} else {
 		return;
@@ -716,6 +721,7 @@ function changeTableProperties() {
 	var num = Date.now();
 	var activityName = $("#activityName").val();
 	var taskStatus = $("#taskStatus").val();
+	$("#insTitle_input").attr("disabled", "disabled");
 	//申请人确认环节开放银行信息编辑权限
 	/*if (activityName == '申请人确认' && taskStatus == '12') {
             formUtil.tableFun.changeEditByTableParam({ name: 'payees', colNum: 3 });
@@ -733,6 +739,9 @@ function changeTableProperties() {
 			name: 'payees',
 			colNum: 3
 		});
+		$("[name='payees'] tbody tr td[data-label='收款人编号']").find("i").show();
+	} else {
+		$("[name='payees'] tbody tr td[data-label='收款人编号']").find("i").hide();
 	}
 	formUtil.tableFun.addPromptBtnByTableParam({
 		name: 'reimburseDetail',
@@ -1699,29 +1708,35 @@ function changeEditTable() {
 	var isChargeAgainst = $("[name='writeOffLoan']").val();
 	var bussinessName = $("[name='bussiness_name']").val();
 	if (subject_type == '09') {
-		$("[name='travelInfo']").show();
-		$("[name='travelInfo']").parent().prev().show();
-		$("[name='travelTable']").show();
-		$("[name='travelTable']").parent().prev().show();
+		formUtil.changeShowByName("travelInfo");
+		formUtil.changeShowByName("travelTable");
+		formUtil.changeHiddenByName("reimburseDetail");
+		//$("[name='travelInfo']").show();
+		//$("[name='travelInfo']").parent().prev().show();
+		//$("[name='travelTable']").show();
+		//$("[name='travelTable']").parent().prev().show();
 		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='操作']").find("i").eq(0).hide();//差旅报销时收款人只有一条信息，隐藏添加行按钮
 		//formUtil.tableFun.chooseModelShowByTableParam({name:'payees',colNum:11});
 		//切换时清空一下费用报销明细
-		$("[name='reimburseDetail']").hide();
-		$("[name='reimburseDetail']").parent().prev().hide();
+		//$("[name='reimburseDetail']").hide();
+		//$("[name='reimburseDetail']").parent().prev().hide();
 	} else {
 		/*if (subject_type == '12') {
 				formUtil.tableFun.chooseModelShowByTableParam({ name: 'reimburseDetail', colNum: 33 });
 			} else {
 				formUtil.tableFun.chooseModelHiddenByTableParam({ name: 'reimburseDetail', colNum: 33 });
 			}*/
-		$("[name='reimburseDetail']").show();
-		$("[name='reimburseDetail']").parent().prev().show();
+		formUtil.changeHiddenByName("travelInfo");
+		formUtil.changeHiddenByName("travelTable");
+		formUtil.changeShowByName("reimburseDetail");
+		//$("[name='reimburseDetail']").show();
+		//$("[name='reimburseDetail']").parent().prev().show();
 		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='操作']").find("i").eq(0).show();//显示添加行按钮
 		//切换时清空一下行程信息表
-		$("[name='travelInfo']").hide();
-		$("[name='travelInfo']").parent().prev().hide();
-		$("[name='travelTable']").hide();
-		$("[name='travelTable']").parent().prev().hide();
+		//$("[name='travelInfo']").hide();
+		//$("[name='travelInfo']").parent().prev().hide();
+		//$("[name='travelTable']").hide();
+		//$("[name='travelTable']").parent().prev().hide();
 	}
 	console.log("changeEditTable:" + (Date.now() - num));
 }
@@ -2293,6 +2308,22 @@ function changeReimbTableColumnHidden() {
 		});
 		formUtil.tableFun.changeEditByTableParam({
 			name: 'reimburseDetail',
+			colNum: 6
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'reimburseDetail',
+			colNum: 7
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'reimburseDetail',
+			colNum: 9
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'reimburseDetail',
+			colNum: 10
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'reimburseDetail',
 			colNum: 17
 		});
 		formUtil.tableFun.changeEditByTableParam({
@@ -2347,6 +2378,22 @@ function changeTravelInfoTableColumnHidden() {
 		formUtil.tableFun.chooseModelShowByTableParam({
 			name: 'travelInfo',
 			colNum: 11
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'travelInfo',
+			colNum: 2
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'travelInfo',
+			colNum: 3
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'travelInfo',
+			colNum: 4
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'travelInfo',
+			colNum: 5
 		});
 		formUtil.tableFun.changeEditByTableParam({
 			name: 'travelInfo',
@@ -3690,7 +3737,8 @@ function setCostCenterByCondition1(obj) {
 						return;
 					}
 				},
-				error: function(result) {}
+				error: function(result) {
+				}
 			});
 		}
 	}
@@ -3737,7 +3785,8 @@ function setCostCenterByCondition2(obj) {
 					return;
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 	if (departmentId) {
@@ -3761,7 +3810,8 @@ function setCostCenterByCondition2(obj) {
 					layer.msg("部门：" + departmentId + "不存在," + result.msg);
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -3784,7 +3834,8 @@ function setCostCenterByUserId(obj) {
 				layer.alert("该员工不存在,请重新确认");
 			}
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 
 	if (departmentId) {
@@ -3816,7 +3867,8 @@ function setCostCenterByUserId(obj) {
 					layer.alert(result.msg);
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -3854,7 +3906,8 @@ function getCostCenter(departmentId, elementId) {
 					$("[name='projectCostCenterName']").val("");
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	} else {
 		//表格中成本中心选择页面
@@ -3897,7 +3950,8 @@ function getCostCenter(departmentId, elementId) {
 					$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心名称']").find("input").val("");
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -4593,7 +4647,8 @@ function judgeInvoiceNumberExistForOcr(name) {
 					}
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -4737,7 +4792,8 @@ function getVoucherMakerAndAuditer() {
 					layer.alert("凭证制单人以及凭证审核人查询接口调用失败");
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -4933,7 +4989,8 @@ function judgeSameCompanyOrNot() {
 				}
 			}
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 	return flag;
 }
@@ -4993,7 +5050,8 @@ function getProjectInfoByProjectNo(projectNumber) {
 					$("[name='projectDirector']").val(result.data.projectDirectorNo);
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 
@@ -5007,6 +5065,11 @@ function cleanValueByBussinessName() {
 		$("[name='select_yZGh']").val("");
 		$("[name='purchaseOrderNo']").val("");
 		$("[name='orderMoney']").val("");
+		layui.form.render("select");
+	}
+	if (bussinessName == 'BM011') {
+		$("[name='select_YNYP']").not(".no_data").val("1");
+		$("[name='select_YNYP']").change();
 		layui.form.render("select");
 	}
 
@@ -5360,7 +5423,8 @@ function getMealAllowanceByUserId(obj) {
 					layer.alert(result.msg);
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -5508,7 +5572,8 @@ function queryUserReimburseScore() {
 					}
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 
@@ -5686,6 +5751,7 @@ function createRBNoInForm() {
 	var isFinancialAccount_Sub = $("[name='isFinancialAccount_Sub']").val();
 	var isFinancialManager_Sub = $("[name='isFinancialManager_Sub']").val();
 	var isCFO_Sub = $("[name='isCFO_Sub']").val();
+	var reimburseNumber = $("[name='reimburseNumber']").val();
 	var formData = {
 		"companyCode": companyCode,
 		"subclassCode": subclassCode,
@@ -5705,7 +5771,7 @@ function createRBNoInForm() {
 		"isFinancialManager_Sub": isFinancialManager_Sub,
 		"isCFO_Sub": isCFO_Sub
 	};
-	if (pageType == 'startProcess') {
+	if (pageType == 'startProcess' || !reimburseNumber) {
 		$.ajax({
 			url: common.getPath() + '/LYFData/createRBNoInForm',
 			type: 'post',
@@ -5726,7 +5792,8 @@ function createRBNoInForm() {
 					setInsTitleByBussinessName("[name='bussiness_name']");
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -5798,7 +5865,8 @@ function judgeInvoiceNumberExist(obj) {
 					});
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	} else {
 		layer.alert("发票号请以;结尾,否则不能识别,请重新确认");
@@ -6077,7 +6145,8 @@ function judgeAllCostCenterExist() {
 					});
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -6110,7 +6179,8 @@ function judgeCostCenterExist(obj) {
 				$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心名称']").find("input").val("");
 			}
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 }
 
@@ -6141,16 +6211,17 @@ function judgeCostCenterExistForProject(obj) {
 				$("[name='projectCostCenterName']").val("");
 			}
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 }
 
 //根据合同编号查询合同信息
 function queryConstractInfo(obj) {
 	var val = $("[name='select_YNYP']").val();
-	if (val == "0") {
+	var contractNo = $("[name='text_473H']").val();
+	if (val == "0" && contractNo) {
 		//合同编码
-		var contractNo = $("[name='text_473H']").val();
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryConstractInfo?contractNo=' + contractNo,
 			type: 'get',
@@ -6542,7 +6613,8 @@ function _formContentLayuiOpen(param, time) {
 					});
 				}
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	} else if (param == 2) {
 		layer.open({
@@ -6884,7 +6956,8 @@ function getPurchaseOrdersMoney(obj) {
 			}
 
 		},
-		error: function(result) {}
+		error: function(result) {
+		}
 	});
 }
 
@@ -6970,7 +7043,8 @@ function judgeExistInBlacklist() {
 				}
 
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	} else {
 		return true;
@@ -7266,7 +7340,8 @@ function getPrepaidInfoInRB(obj) {
 				}
 
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -7309,7 +7384,8 @@ function qryLeagueByCode() {
 				}
 
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 
@@ -7436,7 +7512,8 @@ function setSubjectByReimburseType(obj) {
 				}
 
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 	}
 }
@@ -7525,7 +7602,8 @@ function getWerksIsFrozen() {
 				}
 
 			},
-			error: function(result) {}
+			error: function(result) {
+			}
 		});
 		return flag;
 	}
