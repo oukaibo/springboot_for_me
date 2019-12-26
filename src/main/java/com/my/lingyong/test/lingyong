@@ -1,0 +1,987 @@
+// <script type='text/javascript'>
+var c0;
+var c1;
+var c2;
+var c3;
+var c4;
+var c5;
+var c6;
+var c7;
+var c8;
+var c9;
+var c10;
+var trCObj0;
+$(function() {
+    trCObj0 = $("[name='userAimTable']").find("tbody").find("tr").eq(0);
+    c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index();
+    c1 = trCObj0.find("td[data-label='商品名称']").index();
+    c2 = trCObj0.find("td[data-label='资产名称']").index();
+    c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index();
+    c4 = trCObj0.find("td[data-label='数量(基本单位)']").index();
+    c5 = trCObj0.find("td[data-label='用途']").index();
+    c6 = trCObj0.find("td[data-label='总价']").index();
+    c7 = trCObj0.find("td[data-label='成本中心代码']").index();
+    c8 = trCObj0.find("td[data-label='成本中心名称']").index();
+    c9 = trCObj0.find("td[data-label='预算控制模式']").index();
+    c10 = trCObj0.find("td[data-label='成本中心预算']").index();
+    c11 = trCObj0.find("td[data-label='卡券名称']").index();
+    c12 = trCObj0.find("td[data-label='卡券面值']").index();
+    setBussinessOption();
+    addOnhCangeEvent();
+    hideOrShowTableColumn($("[name='itemTypeAim']"));
+    formUtil.tableFun.changeNotEditByTableParam({
+        name: 'userAimTable',
+        colNum: c6
+    });
+    formUtil.tableFun.chooseModelHiddenByTableParam({
+        name: 'userAimTable',
+        colNum: c7
+    });
+    formUtil.tableFun.chooseModelHiddenByTableParam({
+        name: 'userAimTable',
+        colNum: c8
+    });
+    formUtil.tableFun.chooseModelHiddenByTableParam({
+        name: 'userAimTable',
+        colNum: c9
+    });
+    formUtil.tableFun.chooseModelHiddenByTableParam({
+        name: 'userAimTable',
+        colNum: c10
+    });
+    formUtil.tableFun.changeNotEditByTableParam({
+        name: 'userAimTable',
+        colNum: c1
+    });
+    formUtil.changeNotEditByName("allTotalMoney");
+    var activityName = $("#activityName").val();
+    if (activityName == "提出物品领用申请") {
+        $("[name='costCenterChoose']").removeAttr("readonly");
+        $("[name='costCenterChoose']").removeAttr("disabled");
+    }
+
+    hideImportButton();
+    changeMust("[name='isSeparaMail']");
+    var activityName = $("#activityName").val();
+    var pageType = $("#pageType").val();
+    if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
+        changeHideOrShowForTv("[name='itemTypeAim']");
+        setCostCenterByCondition();
+    }
+});
+
+//生成流程主题规则
+function setInsTitleByBussinessName(obj) {
+    var bussinessName = $(obj).find("option:selected").text();
+    var userName = $("#userName").val();
+    var insTitle = "";
+    if (userName && bussinessName) {
+        insTitle = userName + "的" + bussinessName + "申请";
+        $("#insTitle_input").val(insTitle);
+    }
+}
+
+//加载业务事项选项
+function setBussinessOption() {
+    var num = Date.now();
+
+    // $("[name='itemType']").removeAttr("data-value");
+    var tierParentCode = 'itemAim'
+    $.ajax({
+        url: common.getPath() + '/dictionaryTier/selectDictionaryTierList?tierParentCode=' + tierParentCode + '&pageSize=20',
+        type: 'post',
+        contentType: "application/json;charset=utf-8",
+        async: false,
+        success: function(result) {
+            for (var i = 0; i < result.data.list.length; i++) {
+                $("[name='itemType']").append("<option value=" + result.data.list[i].tierCode + ">" + result.data.list[i].tierName + "</option>");
+            }
+            common.initSelect();
+            setBussinessChildOption($("[name='itemType']"), 0);
+            setWarehouseChildOption($("[name='itemType']"), 0);
+        },
+        error: function(result) {
+        }
+    });
+
+    console.log("setBussinessOption:" + (Date.now() - num));
+}
+
+//级联业务事项
+function setBussinessChildOption(obj, id) {
+    var subject_type = $(obj).val();
+    var activityName = $("#activityName").val();
+    var pageType = $("#pageType").val();
+    if (id == 1 && activityName == '提出物品领用申请' && pageType != 'startProcess') {
+        $("[name='itemTypeAim']").removeAttr("data-value");
+    }
+    $("[name='itemTypeAim']").empty();
+    $("[name='itemType']").removeAttr("data-value");
+
+    var pageType = $("#pageType").val();
+    $.ajax({
+        url: common.getPath() + '/dictionaryTier/selectDictionaryTierList?tierParentCode=' + subject_type + '&pageSize=20',
+        type: 'post',
+        contentType: "application/json;charset=utf-8",
+        async: false,
+        success: function(result) {
+            $("[name='itemTypeAim']").append("<option value=" + "" + ">" + "---请选择---" + "</option>");
+            for (var i = 0; i < result.data.list.length; i++) {
+                $("[name='itemTypeAim']").append("<option value=" + result.data.list[i].tierCode + ">" + result.data.list[i].tierName + "</option>");
+            }
+            common.initSelect();
+
+        },
+        error: function(result) {
+        }
+    });
+}
+//级联仓库
+function setWarehouseChildOption(obj, id) {
+
+    var subject_type = $(obj).val();
+    var activityName = $("#activityName").val();
+    var pageType = $("#pageType").val();
+    if (id == 1 && activityName == '提出物品领用申请' && pageType != 'startProcess') {
+        $("[name='wareHouse']").removeAttr("data-value");
+    }
+    $("[name='wareHouse']").empty();
+    $("[name='itemType']").removeAttr("data-value");
+
+    //成品厂&RDC
+    var activityArr = ["itemAim01", "itemAim07", "itemAim02", "itemAim03", "itemAim04"];
+    //行政仓
+    var activityArr2 = ["itemAim05", "itemAim08"];
+    //各子公司财务部
+    var activityArr3 = ["itemAim06"];
+    var parentCode = "";
+    if (activityArr.indexOf(subject_type) > -1) {
+        parentCode = "itemAim01User";
+    } else if (activityArr2.indexOf(subject_type) > -1) {
+        parentCode = "itemAim02User";
+    } else if (activityArr3.indexOf(subject_type) > -1) {
+        parentCode = "itemAim03User";
+    }
+    if (parentCode) {
+        var pageType = $("#pageType").val();
+        $.ajax({
+            url: common.getPath() + '/dictionaryTier/selectDictionaryTierList?tierParentCode=' + parentCode + '&pageSize=20',
+            type: 'post',
+            contentType: "application/json;charset=utf-8",
+            async: false,
+            success: function(result) {
+                $("[name='wareHouse']").append("<option value=" + "" + ">" + "---请选择---" + "</option>");
+                for (var i = 0; i < result.data.list.length; i++) {
+                    $("[name='wareHouse']").append("<option value=" + result.data.list[i].tierCode + ">" + result.data.list[i].tierName + "</option>");
+                }
+
+                common.initSelect();
+            },
+            error: function(result) {
+            }
+        });
+    }
+
+}
+
+function getSysRoleAndSet() {
+    $("[name='roleUid']").val("sysRole:a00946d11118486c9a26d2fd648bb1d5");
+    var roleUid = $("[name='roleUid']").val();
+    $.ajax({
+        url: common.getPath() + '/sysUser/searchByRole?roleUid=' + roleUid,
+        type: 'post',
+        contentType: "application/json;charset=utf-8",
+        success: function(result) {
+            if (result.status == 0) {
+                for (var i = 0; i < result.data.length; i++) {
+                    $("[name='select_niJG']").append("<option value=" + result.data[i].userUid + ">" + result.data[i].userName + "(" + result.data[i].userUid + ")" + "</option>");
+                }
+                common.initSelect();
+            } else {
+                layer.alert(result.msg);
+
+            }
+        },
+        error: function(result) {}
+    });
+}
+function cleanValue() {
+
+    formUtil.tableFun.clearTargetObjValueByParam({
+        name: 'userAimTable'
+    });
+    $("[name='userAimTable'] tbody").find("tr:gt(0)").remove();
+    $("[name='allTotalMoney']").val("0");
+
+}
+function calculatedPrice(obj) {
+    var id = $(obj).parent().attr("data-label");
+    var costPrice = 0.0;
+    var numbers = 0;
+    if (id == "成本价(基本单位)") {
+        costPrice = parseFloat($(obj).val());
+        numbers = $(obj).parent().parent().find("td[data-label='数量(基本单位)']").find("input").val();
+        checkAndfomartNumber(obj, 8, 2);
+    } else if (id == "卡券面值") {
+        costPrice = parseFloat($(obj).val());
+        numbers = $(obj).parent().parent().find("td[data-label='数量(基本单位)']").find("input").val();
+        checkAndfomartNumber(obj, 8, 2);
+    } else {
+        var text = $("[name='itemType'] option:selected").text();
+
+        if (text == "卡券") {
+            costPrice = $(obj).parent().parent().find("td[data-label='卡券面值']").find("input").val();
+
+        } else {
+            costPrice = $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val();
+
+        }
+        numbers = parseInt($(obj).val());
+        // checkAndfomartNumber(obj,8,2);
+    }
+
+    var total = costPrice * numbers;
+    total = isNaN(total) ? 0 : total;
+    $(obj).parent().parent().find("td[data-label='总价']").find("input").val(total);
+    checkAndfomartNumber($(obj).parent().parent().find("td[data-label='总价']").find("input"), 8, 2);
+    var allTotal = 0;
+
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        var totalM = parseFloat($(this).find("td[data-label='总价']").find("input").val());
+        totalM = isNaN(totalM) ? 0 : totalM;
+        allTotal += totalM;
+    })
+
+    $("[name='allTotalMoney']").val(allTotal);
+    checkAndfomartNumber($("[name='allTotalMoney']"), 8, 2);
+}
+function getAllTotalMoney(obj) {
+}
+function addOnhCangeEvent() {
+    $("[name = 'userAimTable'] tbody td[data-label='成本价(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
+    $("[name = 'userAimTable'] tbody td[data-label='卡券面值']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
+    $("[name = 'userAimTable'] tbody td[data-label='数量(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);");
+    $("[name = 'userAimTable'] tbody td[data-label='商品编码']").find("input").attr("onchange", "getGoodName(this);");
+    $("[name = 'costCenterChoose']").attr("onchange", "judgeCostCenterExistForProject(this);");
+}
+function hideImportButton() {
+    var itemType = $("[name='itemType']").val();
+    var pageType = $("[name='pageType']").val();
+    var activityName = $("#activityName").val();
+    if (activityName == '提出物品领用申请') {
+        switch (itemType) {
+            case "itemAim06":
+                $("[name='userAimTable']").find("tfoot").eq(0).hide();
+                break;
+            case "itemAim05":
+                $("[name='userAimTable']").find("tfoot").eq(0).hide();
+                break;
+            case "selectOption":
+                $("[name='userAimTable']").find("tfoot").eq(0).hide();
+                break;
+            default:
+                $("[name='userAimTable']").find("tfoot").eq(0).show();
+                break
+        }
+    }
+}
+
+common.chooseDepart = function(elementId) {
+    var index = layer.open({
+        type: 2,
+        title: '选择部门或成本中心',
+        shadeClose: true,
+        shade: 0.3,
+        area: ['600px', '500px'],
+        content: common.chooseDepartPath(elementId),
+        success: function(layero, lockIndex) {
+            var body = layer.getChildFrame('body', lockIndex);
+            body.find('button#addDepart').on('click', function() {
+                layer.close(lockIndex);
+            });
+            body.find('button#close').on('click', function() {
+                layer.close(lockIndex);
+            });
+            body.find('button#costCenterSure').on('click', function() {
+                layer.close(lockIndex);
+            });
+            body.find('button#costCenterClose').on('click', function() {
+                layer.close(lockIndex);
+            });
+        }
+    });
+}
+
+//重写excel导入数据填充到数据表格补充函数
+function fileUploadChangeEvent() {
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        $(this).find("td[data-label='数量(基本单位)']").find("input").change();
+    });
+}
+//获取商品名称
+function getGoodName(obj) {
+    var goodCode = $(obj).val();
+    var activityName = $("#activityName").val();
+    // if (activityName == '申请人填写') {
+    if (goodCode.trim() != "") {
+        $.ajax({
+            url: common.getPath() + '/sysGood/getGoodInfo?skuCode=' + goodCode,
+            type: 'post',
+            async: false,
+            contentType: "application/json;charset=utf-8",
+            success: function(result) {
+                if (result.status == '0') {
+                    $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val(result.data.spuName);
+                } else {
+                    layer.msg("商品编码不存在!");
+                    $(obj).val("");
+                    $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val("");
+                    return;
+                }
+            }
+        });
+    }
+    var activityName = $("#activityName").val();
+    var text = $("[name='itemType'] option:selected").text();
+    // var index=text.indexOf("-")+1;
+    // text=text.substring(index);
+    if (text != "卡券") {
+        getMovePriceInfoByOne(obj);
+    }
+    // }
+}
+function giveBussinessName(obj) {
+    var val = $(obj).val();
+    var index = val.indexOf("-itemAimType");
+    var type = val.substring(0, index);
+    $("[name='bussiness_name']").val(type);
+}
+//资产类时隐藏商品编码
+function hideOrShowTableColumn(obj) {
+
+    var activityName = $("#activityName").val();
+    var text = $("[name='itemType'] option:selected").text();
+    // var index=text.indexOf("-")+1;
+    // text=text.substring(index);
+    if (text == "商品" || text == "卡券") {
+        $("[name='isCardOrCommodity']").val("yes");
+    } else {
+        $("[name='isCardOrCommodity']").val("no");
+    }
+
+    switch (text) {
+        case "固定资产":
+            // 商品编码
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c0
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c0
+            });
+
+            // 商品名称
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c1
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c1
+            });
+
+            // 资产名称
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c2
+            });
+            formUtil.tableFun.changeShowMustByTableParam({
+                name: 'userAimTable',
+                colNum: c2
+            });
+            // 资产名称
+
+            // 卡券名称
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c11
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c11
+            });
+            // 卡券面值
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c12
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c12
+            });
+            // 成本价(基本单位)
+            if (activityName == '资产主管判断库存') {
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c3
+                });
+            } else {
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c3
+                });
+            }
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c3
+            });
+
+            break
+        case "卡券":
+            // 商品编码
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c0
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c0
+            });
+
+            // 商品名称
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c1
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c1
+            });
+
+            // 资产名称
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c2
+            });
+            // 资产名称
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c2
+            });
+
+            // 卡券名称
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c11
+            });
+            formUtil.tableFun.changeShowMustByTableParam({
+                name: 'userAimTable',
+                colNum: c11
+            });
+            // 卡券面值
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c12
+            });
+            formUtil.tableFun.changeShowMustByTableParam({
+                name: 'userAimTable',
+                colNum: c12
+            });
+
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c3
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c3
+            });
+
+            break
+        default:
+            // 商品编码
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c0
+            });
+            formUtil.tableFun.changeShowMustByTableParam({
+                name: 'userAimTable',
+                colNum: c0
+            });
+
+            // 商品名称
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c1
+            });
+            formUtil.tableFun.changeShowMustByTableParam({
+                name: 'userAimTable',
+                colNum: c1
+            });
+
+            // 资产名称
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c2
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c2
+            });
+
+            // 卡券名称
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c11
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c11
+            });
+            // 卡券面值
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c12
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c12
+            });
+
+            // 成本价(基本单位)
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c3
+            });
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c3
+            });
+
+            break
+    }
+}
+
+function changeHideOrShowForTv(obj) {
+    var val = $(obj).val();
+
+    switch (val) {
+        case "YY02-itemAimType-电商直播":
+            formUtil.changeShowByName("isSeparaMail");
+            formUtil.changeShowByName("deliverWay");
+            formUtil.changeShowByName("laterDate");
+            formUtil.changeShowByName("homeAddress");
+            formUtil.changeShowByName("theUser");
+            formUtil.changeShowByName("deleverUser");
+            break
+        default:
+            formUtil.changeHiddenByName("isSeparaMail");
+            formUtil.changeHiddenByName("deliverWay");
+            formUtil.changeHiddenByName("laterDate");
+            formUtil.changeHiddenByName("homeAddress");
+            formUtil.changeHiddenByName("theUser");
+            formUtil.changeHiddenByName("deleverUser");
+            break
+    }
+    changeMust(obj);
+}
+function chooseUser(obj) {
+    var text = $("[name='wareHouse'] option:selected").text();
+    if (text == "总部成品仓") {
+        $("[name='headqFiniProWarhou']").val("yes");
+    } else {
+        $("[name='headqFiniProWarhou']").val("no");
+    }
+    if (text == "总部行政仓") {
+        $("[name='headqAdmistiProWarhou']").val("yes");
+    } else {
+        $("[name='headqAdmistiProWarhou']").val("no");
+    }
+
+    var userRdcCodeStr = $(obj).val();
+    var index = userRdcCodeStr.indexOf(";") + 1;
+    userRdcCodeStr = userRdcCodeStr.substring(0, index);
+    $("[name='chooseRdcUser']").val(userRdcCodeStr);
+}
+function changeMust(obj) {
+    var itemType = $(obj).val();
+    if (itemType) {
+        switch (itemType) {
+            case "0":
+                formUtil.changeShowMustByName("deliverWay");
+                formUtil.changeShowMustByName("homeAddress");
+                formUtil.changeShowMustByName("laterDate");
+                formUtil.changeShowMustByName("deleverUser");
+                formUtil.changeShowMustByName("theUser");
+
+                break;
+            case "1":
+                formUtil.changeHiddenMustByName("deliverWay");
+                formUtil.changeHiddenMustByName("homeAddress");
+                formUtil.changeHiddenMustByName("laterDate");
+                formUtil.changeHiddenMustByName("deleverUser");
+                formUtil.changeHiddenMustByName("theUser");
+                break;
+
+            default:
+                formUtil.changeHiddenMustByName("deliverWay");
+                formUtil.changeHiddenMustByName("homeAddress");
+                formUtil.changeHiddenMustByName("laterDate");
+                formUtil.changeHiddenMustByName("deleverUser");
+                formUtil.changeHiddenMustByName("theUser");
+                break
+        }
+    }
+}
+
+//选择部门的路径重构公用方法打开自定义页面
+common.chooseDepartPath = function(id) {
+    var companyNum = $("#companyNum").val();
+    return common.getPath() + "/LYFData/queryAllCostCenter?elementId=" + id + "&companyNum=" + companyNum;
+}
+
+//判断填写的金额是否超过预算
+function judgeIsOverBudget() {
+
+    var bussinessName = $("[name='bussiness_name']").val();
+
+    var sysDate = new Date();
+    var flag = false;
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        if (bussinessName == "固定资产") {
+            $(this).find("td[data-label='预算控制模式']").find("input").val("不控制");
+        }
+        var amount = 0;
+        var costCenter = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
+        var controlType = $(this).find("td[data-label='预算控制模式']").find("input").val();
+        var budget = parseFloat($(this).find("td[data-label='成本中心预算']").find("input").val());
+        var isError = false;
+        budget = isNaN(budget) ? 0 : budget;
+        $("[name='userAimTable'] tbody").find("tr").each(function() {
+            var costCenter1 = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
+            var total = parseFloat($(this).find("td[data-label='总价']").find("input").val());
+            var dontMoney = isNaN(total)
+            if (dontMoney) {
+                layer.alert("总价有误，请检查后再提交！");
+                isError = true;
+                return false;
+            }
+            total = dontMoney ? 0 : total;
+            if (costCenter == costCenter1) {
+                amount += total;
+            }
+
+        });
+        if (isError) {
+            return flag;
+        }
+        if (controlType == '不控制') {
+            flag = true;
+        } else {
+
+            if (amount <= budget) {
+                flag = true;
+            } else {
+                flag = false;
+                layer.alert(costCenter + "成本中心预算金额不足,报销明细金额超过该成本中心预算");
+                return flag;
+            }
+
+        }
+    });
+
+    return flag;
+}
+
+function check_before_submit() {
+    var activityName = $("#activityName").val();
+    if (activityName == '提出物品领用申请') {
+        setCostCenterByCondition1();
+        setInsTitleByBussinessName("[name='itemTypeAim']");
+        var flag1 = getBudget1();
+        var flag2 = judgeIsOverBudget();
+        if (flag2 && flag1) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+//提供手输方法查询成本中心是否存在---项目报销
+function judgeCostCenterExistForProject(obj) {
+
+    var kostl = $(obj).val();
+    $.ajax({
+        url: common.getPath() + '/LYFData/selectCostCenterAndDepartmentByKostl?kostl=' + kostl,
+        type: 'post',
+        dataType: 'json',
+        contentType: 'application/json;charset=UTF-8',
+        async: false,
+        success: function(result) {
+            if (result.status == 0) {
+                if (result.data.length > 1 || !result.data[0].departmentId) {
+                    layer.alert("成本中心:" + kostl + "存在多个部门或没有对应到部门,请找人事协调")
+                    $(obj).val("");
+                    $("[name='text_tCDJ']").val("");
+                } else {
+                    $(obj).parent().find("input[type='text']").val(result.data[0].kostl);
+                    $(obj).parent().find("input[type='hidden']").val(result.data[0].departmentId);
+                    $("[name='text_tCDJ']").val(result.data[0].cstctrShortText);
+                    setCostCenterByCondition1(obj);
+                }
+            } else {
+                layer.alert(result.msg);
+                $(obj).val("");
+                $("[name='text_tCDJ']").val("");
+            }
+        },
+        error: function(result) {
+        }
+    });
+}
+function getMovePriceInfoByOne(obj) {
+    var hourse = $("[name='wareHouse']").val();
+    if (!hourse) {
+        layer.msg("请先填写仓库！");
+        $(obj).val("");
+        $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val("");
+        return;
+    }
+    hourse = $("[name='wareHourseCode']").val();
+    if (hourse == "不查") {
+        layer.msg("请手填成本价！");
+        return;
+    }
+    var good = $(obj).val();
+
+    if (good && hourse) {
+        $.ajax({
+            url: common.getPath() + '/rbQuerySAPInfo/getMovePriceInfoByOne',
+            type: 'post',
+            dataType: 'json',
+            data: JSON.stringify({
+                "MATNR": good,
+                "BWKEY": hourse
+            }),
+            contentType: "application/json;charset=utf-8",
+            success: function(result) {
+                if (result.success && result.obj) {
+                    var str = result.obj.responseBody;
+                    if (str) {
+                        var jsonObj = JSON.parse(str);
+                        var price = jsonObj.Body["ZMM_GET_VERPR.Response"].CT_VERPR.item.VERPR;
+                        if (price) {
+                            $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val(price);
+                        } else {
+                            $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val("0");
+                        }
+                    } else {
+                        layer.alert("商品" + good + "在SAP没有维护移动平均价信息！");
+                        return;
+                    }
+
+                } else {
+                    layer.alert("商品" + good + "在SAP没有维护移动平均价信息！");
+                    return;
+                }
+            },
+            error: function(result) {
+            }
+        });
+    }
+
+}
+
+//收款人类型为供应商、门店、一次性供应商时默认成本中心为发起人的成本中心，名称是发起人的部门名称
+function setCostCenterByCondition1(obj) {
+
+    // var kostl=$("[name='costCenterChoose']").val();
+    var costCenterName = $("[name='text_tCDJ']").val();
+    var departmentId = $("[name='costCenterChoose']").parent().find("input[type=hidden]").val();
+    var kostl = $("[name='costCenterChoose']").parent().find("input[type=text]").val();
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        $(this).find("td[data-label='成本中心代码']").not(".no_data").find("input[type='text']").val(kostl);
+        $(this).find("td[data-label='成本中心代码']").not(".no_data").find("input[type='hidden']").val(departmentId);
+        $(this).find("td[data-label='成本中心名称']").not(".no_data").find("input").val(costCenterName);
+    });
+
+}
+
+function getBudget1() {
+    var bussinessName = $("[name='bussiness_name']").val();
+    var month = (new Date()).getMonth() + 1;
+    var costCenter = [];
+    itemCode = "";
+    var tableName = "";
+    var flag = false;
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        var costCenterCode = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
+        if (costCenterCode) {
+            costCenter.push(costCenterCode);
+        }
+    });
+    tableName = "userAimTable";
+    if (costCenter.length > 0 && bussinessName != "固定资产") {
+        $.ajax({
+            url: common.getPath() + '/LYFSynRB/qryBudgetByCostCenter?costCenter=' + costCenter.toString() + "&month=" + month + "&tbpmCode=" + bussinessName + "&itemCode=" + itemCode,
+            type: 'get',
+            async: false,
+            contentType: "application/json;charset=utf-8",
+            success: function(result) {
+                if (JSON.stringify(result.data) == '[]') {
+                    var costCenterArray = unique(costCenter);
+                    layer.alert("成本中心" + costCenterArray.toString() + "本月没有对应业务预算,请重新确认");
+                    $("[name='" + tableName + "'] tbody").find("tr").each(function() {
+                        $(this).find("td[data-label='成本中心代码']").find("input").val("");
+                        $(this).find("td[data-label='成本中心名称']").find("input").val("");
+                        $(this).find("td[data-label='成本中心预算']").find("input").val("");
+                        $(this).find("td[data-label='预算控制模式']").find("input").val("");
+                    });
+                    flag = false;
+                    return flag;
+                }
+                var dataArr = result.data;
+                if (itemCode) {
+                    dataArr = dataArr.filter(function(e) {
+                        return e.itemCode == itemCode;
+                    });
+                } else {
+                    dataArr = dataArr.filter(function(e) {
+                        return e.itemCode == null;
+                    });
+                }
+                if (dataArr.length > 0) {
+                    $("[name='" + tableName + "'] tbody").find("tr").each(function() {
+                        var costCenterNo = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
+                        var index = $(this).index();
+                        for (var i = 0; i < dataArr.length; i++) {
+                            if (costCenterNo == dataArr[i].costCenter) {
+                                $("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心预算']").not(".no_data").find("input").val(dataArr[i].availableAmount);
+                                $("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='预算控制模式']").not(".no_data").find("input").val(dataArr[i].controlType);
+                                for (var j = 0; j < costCenter.length; j++) {
+                                    costCenter.remove(costCenterNo);
+                                }
+                            }
+                        }
+
+                    });
+                }
+                if (costCenter.length > 0) {
+                    layer.alert("成本中心" + costCenter.toString() + "该业务当月没有预算");
+                    $("[name='" + tableName + "'] tbody").find("tr").each(function() {
+                        var costCenterNum = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
+                        if (costCenter.indexOf(costCenterNum) != -1) {
+                            $(this).find("td[data-label='成本中心代码']").find("input").val("");
+                            $(this).find("td[data-label='成本中心名称']").find("input").val("");
+                            $(this).find("td[data-label='成本中心预算']").find("input").val("");
+                            $(this).find("td[data-label='预算控制模式']").find("input").val("");
+                        }
+                    });
+                    flag = false;
+                    return flag
+                } else {
+                    flag = true;
+                }
+            },
+            error: function(result) {}
+        });
+
+        return flag;
+    } else
+        return true;
+}
+
+function getCostCenter(departmentId, elementId) {
+
+    $.ajax({
+        url: common.getPath() + '/LYFData/queryDepartAndCostCenterByDepartmentId?departmentId=' + departmentId,
+        type: 'post',
+        async: false,
+        contentType: "application/json;charset=utf-8",
+        success: function(result) {
+            if (result.status == 0) {
+                if (result.data == null) {
+                    layer.alert("该部门没有对应的成本中心");
+                    $("[name='costCenterChoose']").val("");
+                    $("[name='text_tCDJ']").val("");
+                    return;
+                }
+                if (result.data.kostl == null) {
+                    layer.alert("该部门没有对应的成本中心");
+                    $("[name='costCenterChoose']").val("");
+                    $("[name='text_tCDJ']").val("");
+                } else {
+
+                    $("[name='costCenterChoose']").parent().find("input[type='text']").val(result.data.kostl);
+                    $("[name='costCenterChoose']").parent().find("input[type='hidden']").val(result.data.departmentId);
+                    $("[name='text_tCDJ']").val(result.data.cstctrShortText);
+                    setCostCenterByCondition1();
+                }
+            } else {
+                layer.alert(result.msg);
+                $("[name='costCenterChoose']").val("");
+                $("[name='text_tCDJ']").val("");
+            }
+        },
+        error: function(result) {
+        }
+    });
+}
+
+function getCostCenterForProject(elementId, result) {
+    if (elementId == "choose_depart_XYWp_hide") {
+        $("[name='text_tCDJ']").val(result.cstctrShortText);
+        setCostCenterByCondition1();
+    }
+
+}
+
+function giveHourseToHideInput(obj) {
+    var wareHourse = $(obj).val();
+    var index2 = wareHourse.indexOf("-");
+    var index = wareHourse.indexOf(";") + 1;
+    if (index2 == -1) {
+        $("[name='wareHourseCode']").val("不查");
+    } else {
+
+        var wareHourseCode = wareHourse.substring(index, index2);
+        $("[name='wareHourseCode']").val(wareHourseCode);
+    }
+}
+
+function setCostCenterByCondition(obj) {
+    var departmentId = $("#departNo").val();
+    if (departmentId) {
+        $.ajax({
+            url: common.getPath() + '/LYFData/queryDepartAndCostCenterByDepartmentId?departmentId=' + departmentId,
+            type: 'post',
+            async: false,
+            contentType: "application/json;charset=utf-8",
+            success: function(result) {
+                if (result.data != null) {
+                    if (result.data.kostl && result.data.cstctrShortText) {
+                        $("[name='costCenterChoose']").parent().find("input[type='text']").val(result.data.kostl);
+                        $("[name='costCenterChoose']").parent().find("input[type='hidden']").val(result.data.departmentId);
+                        $("[name='text_tCDJ']").val(result.data.cstctrShortText);
+                    } else {
+                        layer.alert("该部门没有对应的成本中心");
+                        $("[name='costCenterChoose']").parent().find("input").val("");
+                        $("[name='text_tCDJ']").val("");
+                        return;
+                    }
+                } else {
+                    layer.msg("该部门没有对应的成本中心");
+                    return;
+                }
+            },
+            error: function(result) {
+            }
+        });
+    }
+
+}
+// 	</script>
