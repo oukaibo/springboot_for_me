@@ -501,8 +501,8 @@ function setApprovalPower() {
 		}
 
 	}
-	//新加的授权，中心总监10W，副总裁100W以上总裁
-	var newBussinessArr = ["ZXMJ01", "ZXMJ02", "ZXMJ03", "ZXMJ04", "ZXMJ05", "ZXMJ06", "ZXMJ07", "GSJS01", "GSJS02", "WZCG01", "WZCG02", "WZCG03", "WZCG04", "WZCG05", "WZCG06", "WZCG07"]
+	//新加的授权，中心总监10W，副总裁100W以上总裁 "ZXMJ06", "ZXMJ07",
+	var newBussinessArr = ["ZXMJ01", "ZXMJ02", "ZXMJ03", "ZXMJ04", "ZXMJ05", "GSJS01", "GSJS02", "WZCG01", "WZCG02", "WZCG03", "WZCG04", "WZCG05", "WZCG06", "WZCG07"]
 	if (newBussinessArr.indexOf(bussiness_name) != -1) {
 		if (total <= 100000) {
 			$("[name='isCentralDirector']").val("1");
@@ -524,7 +524,13 @@ function setApprovalPower() {
 //根据收款人进行在原有的授权基础上进行新的授权
 function setNewApproval() {
 	var approval = $("[name='isCentralDirector']").val();
-	var userId = $("#userId").val();
+	var userId = "";
+	var pageType = $("#pageType").val();
+	if (pageType == 'startProcess') {
+		userId = $("#userId").val();
+	} else {
+		userId = $("#insInitUser").val();
+	}
 	var userIds = [];
 	var departmentArr = [];
 	var subjectType = $("[name='subject_type']").val();
@@ -1708,29 +1714,35 @@ function changeEditTable() {
 	var isChargeAgainst = $("[name='writeOffLoan']").val();
 	var bussinessName = $("[name='bussiness_name']").val();
 	if (subject_type == '09') {
-		$("[name='travelInfo']").show();
-		$("[name='travelInfo']").parent().prev().show();
-		$("[name='travelTable']").show();
-		$("[name='travelTable']").parent().prev().show();
+		formUtil.changeShowByName("travelInfo");
+		formUtil.changeShowByName("travelTable");
+		formUtil.changeHiddenByName("reimburseDetail");
+		//$("[name='travelInfo']").show();
+		//$("[name='travelInfo']").parent().prev().show();
+		//$("[name='travelTable']").show();
+		//$("[name='travelTable']").parent().prev().show();
 		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='操作']").find("i").eq(0).hide();//差旅报销时收款人只有一条信息，隐藏添加行按钮
 		//formUtil.tableFun.chooseModelShowByTableParam({name:'payees',colNum:11});
 		//切换时清空一下费用报销明细
-		$("[name='reimburseDetail']").hide();
-		$("[name='reimburseDetail']").parent().prev().hide();
+		//$("[name='reimburseDetail']").hide();
+		//$("[name='reimburseDetail']").parent().prev().hide();
 	} else {
 		/*if (subject_type == '12') {
 				formUtil.tableFun.chooseModelShowByTableParam({ name: 'reimburseDetail', colNum: 33 });
 			} else {
 				formUtil.tableFun.chooseModelHiddenByTableParam({ name: 'reimburseDetail', colNum: 33 });
 			}*/
-		$("[name='reimburseDetail']").show();
-		$("[name='reimburseDetail']").parent().prev().show();
+		formUtil.changeHiddenByName("travelInfo");
+		formUtil.changeHiddenByName("travelTable");
+		formUtil.changeShowByName("reimburseDetail");
+		//$("[name='reimburseDetail']").show();
+		//$("[name='reimburseDetail']").parent().prev().show();
 		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='操作']").find("i").eq(0).show();//显示添加行按钮
 		//切换时清空一下行程信息表
-		$("[name='travelInfo']").hide();
-		$("[name='travelInfo']").parent().prev().hide();
-		$("[name='travelTable']").hide();
-		$("[name='travelTable']").parent().prev().hide();
+		//$("[name='travelInfo']").hide();
+		//$("[name='travelInfo']").parent().prev().hide();
+		//$("[name='travelTable']").hide();
+		//$("[name='travelTable']").parent().prev().hide();
 	}
 	console.log("changeEditTable:" + (Date.now() - num));
 }
@@ -2318,12 +2330,17 @@ function changeReimbTableColumnHidden() {
 		});
 		formUtil.tableFun.changeEditByTableParam({
 			name: 'reimburseDetail',
+			colNum: 11
+		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'reimburseDetail',
 			colNum: 17
 		});
 		formUtil.tableFun.changeEditByTableParam({
 			name: 'reimburseDetail',
 			colNum: 18
 		});
+		layui.form.render("select");
 
 	} else {
 		formUtil.tableFun.chooseModelHiddenByTableParam({
@@ -2397,6 +2414,10 @@ function changeTravelInfoTableColumnHidden() {
 			name: 'travelInfo',
 			colNum: 11
 		});
+		formUtil.tableFun.changeEditByTableParam({
+			name: 'travelInfo',
+			colNum: 12
+		});
 		formUtil.tableFun.changeShowMustByTableParam({
 			name: 'travelInfo',
 			colNum: 10
@@ -2405,6 +2426,7 @@ function changeTravelInfoTableColumnHidden() {
 			name: 'travelInfo',
 			colNum: 11
 		});
+		layui.form.render("select");
 	} else {
 		formUtil.tableFun.chooseModelHiddenByTableParam({
 			name: 'travelInfo',
@@ -3501,19 +3523,19 @@ function myrowChangeEvent(obj, sign) {
 				}
 				console.log("No3:" + (Date.now() - num));
 
-			}
-		} else {
-			if (title == "travelInfo") {
-				var writeOffLoan = $("[name='writeOffLoan']").val();
-				var subjectType = $("[name='subject_type']").val();
-				if (!((writeOffLoan == "0") && (subjectType == "09"))) {
+			} else {
+				if (title == "travelInfo") {
+					var writeOffLoan = $("[name='writeOffLoan']").val();
+					var subjectType = $("[name='subject_type']").val();
+					if (!((writeOffLoan == "0") && (subjectType == "09"))) {
 
-					formUtil.tableFun._addDataRow("payees");
-					var detailId = uuid();
-					var maintrsLength = $("[name = 'travelInfo'] tbody ").find("tr").length;
-					var shoukuanrentrsLength = $("[name = 'payees'] tbody ").find("tr").length;
-					$("[name = 'travelInfo'] tbody ").find("tr").eq(maintrsLength - 1).find("td[data-label='排序']").not(".no_data").find("input").val(detailId);
-					$("[name = 'payees'] tbody ").find("tr").eq(shoukuanrentrsLength - 1).find("td[data-label='排序']").not(".no_data").find("input").val(detailId);
+						formUtil.tableFun._addDataRow("payees");
+						var detailId = uuid();
+						var maintrsLength = $("[name = 'travelInfo'] tbody ").find("tr").length;
+						var shoukuanrentrsLength = $("[name = 'payees'] tbody ").find("tr").length;
+						$("[name = 'travelInfo'] tbody ").find("tr").eq(maintrsLength - 1).find("td[data-label='排序']").not(".no_data").find("input").val(detailId);
+						$("[name = 'payees'] tbody ").find("tr").eq(shoukuanrentrsLength - 1).find("td[data-label='排序']").not(".no_data").find("input").val(detailId);
+					}
 				}
 			}
 		}
@@ -5745,6 +5767,7 @@ function createRBNoInForm() {
 	var isFinancialAccount_Sub = $("[name='isFinancialAccount_Sub']").val();
 	var isFinancialManager_Sub = $("[name='isFinancialManager_Sub']").val();
 	var isCFO_Sub = $("[name='isCFO_Sub']").val();
+	var reimburseNumber = $("[name='reimburseNumber']").val();
 	var formData = {
 		"companyCode": companyCode,
 		"subclassCode": subclassCode,
@@ -5764,7 +5787,7 @@ function createRBNoInForm() {
 		"isFinancialManager_Sub": isFinancialManager_Sub,
 		"isCFO_Sub": isCFO_Sub
 	};
-	if (pageType == 'startProcess') {
+	if (pageType == 'startProcess' || !reimburseNumber) {
 		$.ajax({
 			url: common.getPath() + '/LYFData/createRBNoInForm',
 			type: 'post',
@@ -6212,9 +6235,9 @@ function judgeCostCenterExistForProject(obj) {
 //根据合同编号查询合同信息
 function queryConstractInfo(obj) {
 	var val = $("[name='select_YNYP']").val();
-	if (val == "0") {
+	var contractNo = $("[name='text_473H']").val();
+	if (val == "0" && contractNo) {
 		//合同编码
-		var contractNo = $("[name='text_473H']").val();
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryConstractInfo?contractNo=' + contractNo,
 			type: 'get',
