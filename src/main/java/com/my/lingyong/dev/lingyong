@@ -61,11 +61,12 @@ $(function() {
     }
 
     hideImportButton();
+    changeHideOrShowForTv("[name='itemTypeAim']");
     changeMust("[name='isSeparaMail']");
     var activityName = $("#activityName").val();
     var pageType = $("#pageType").val();
     if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
-        changeHideOrShowForTv("[name='itemTypeAim']");
+
         setCostCenterByCondition();
     }
 });
@@ -567,7 +568,7 @@ function changeHideOrShowForTv(obj) {
     var val = $(obj).val();
 
     switch (val) {
-        case "YY02-itemAimType-电商直播":
+        case "YX02-itemAimType-电商直播":
             formUtil.changeShowByName("isSeparaMail");
             formUtil.changeShowByName("deliverWay");
             formUtil.changeShowByName("laterDate");
