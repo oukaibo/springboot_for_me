@@ -683,10 +683,7 @@ function deleverCodeHideOrShow() {
     var activityName = $("#activityName").val();
     var pageType = $("#pageType").val();
     if (activityName == "进行快递打单") {
-        formUtil.tableFun.changeShowMustByTableParam({
-            name: 'userAimTable',
-            colNum: c18
-        });
+
         formUtil.tableFun.chooseModelShowByTableParam({
             name: 'userAimTable',
             colNum: c18//科目编码
@@ -763,7 +760,10 @@ function changeMust(obj, id) {
                     colNum: c20,
                     rowNum: index//科目编码
                 });
-
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c18
+                });
                 break;
             case "1":
                 // formUtil.tableFun.changeShowMustByTableParam({
@@ -796,7 +796,10 @@ function changeMust(obj, id) {
                     colNum: c20,
                     rowNum: index//科目编码
                 });
-
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c18
+                });
                 break;
 
             default:
@@ -830,7 +833,10 @@ function changeMust(obj, id) {
                     colNum: c20,
                     rowNum: index//科目编码
                 });
-
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c18
+                });
                 break
         }
     }
@@ -872,7 +878,10 @@ function changeMust(obj, id) {
                         colNum: c20,
                         rowNum: index//科目编码
                     });
-
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c18
+                    });
                     break;
                 case "1":
                     // formUtil.tableFun.changeShowMustByTableParam({
@@ -905,7 +914,10 @@ function changeMust(obj, id) {
                         colNum: c20,
                         rowNum: index//科目编码
                     });
-
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c18
+                    });
                     break;
 
                 default:
@@ -939,7 +951,10 @@ function changeMust(obj, id) {
                         colNum: c20,
                         rowNum: index//科目编码
                     });
-
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c18
+                    });
                     break
             }
 
