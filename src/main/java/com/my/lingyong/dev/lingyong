@@ -17,6 +17,7 @@ $(function() {
     c1 = trCObj0.find("td[data-label='商品名称']").index();
     c2 = trCObj0.find("td[data-label='资产名称']").index();
     c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index();
+    c19 = trCObj0.find("td[data-label='基本单位']").index();
     c4 = trCObj0.find("td[data-label='数量(基本单位)']").index();
     c5 = trCObj0.find("td[data-label='用途']").index();
     c6 = trCObj0.find("td[data-label='总价']").index();
@@ -26,6 +27,36 @@ $(function() {
     c10 = trCObj0.find("td[data-label='成本中心预算']").index();
     c11 = trCObj0.find("td[data-label='卡券名称']").index();
     c12 = trCObj0.find("td[data-label='卡券面值']").index();
+    c13 = trCObj0.find("td[data-label='领用方式']").index();
+    c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index();
+    c15 = trCObj0.find("td[data-label='收获地址']").index();
+    c16 = trCObj0.find("td[data-label='收货人']").index();
+    c17 = trCObj0.find("td[data-label='寄货人']").index();
+    c20 = trCObj0.find("td[data-label='收货人电话']").index();
+    c18 = trCObj0.find("td[data-label='快递单号']").index();
+    if (common.isMobile()) {
+        c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
+        c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
+        c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
+        c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
+        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
+        c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
+        c5 = trCObj0.find("td[data-label='用途']").index() - 2;
+        c6 = trCObj0.find("td[data-label='总价']").index() - 2;
+        c7 = trCObj0.find("td[data-label='成本中心代码']").index() - 2;
+        c8 = trCObj0.find("td[data-label='成本中心名称']").index() - 2;
+        c9 = trCObj0.find("td[data-label='预算控制模式']").index() - 2;
+        c10 = trCObj0.find("td[data-label='成本中心预算']").index() - 2;
+        c11 = trCObj0.find("td[data-label='卡券名称']").index() - 2;
+        c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
+        c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
+        c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
+        c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+        c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
+        c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
+        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
+        c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
+    }
     setBussinessOption();
     addOnhCangeEvent();
     hideOrShowTableColumn($("[name='itemTypeAim']"));
@@ -53,22 +84,28 @@ $(function() {
         name: 'userAimTable',
         colNum: c1
     });
+    formUtil.tableFun.changeNotEditByTableParam({
+        name: 'userAimTable',
+        colNum: c19
+    });
     formUtil.changeNotEditByName("allTotalMoney");
-    var activityName = $("#activityName").val();
-    if (activityName == "提出物品领用申请") {
-        $("[name='costCenterChoose']").removeAttr("readonly");
-        $("[name='costCenterChoose']").removeAttr("disabled");
-    }
 
     hideImportButton();
     changeHideOrShowForTv("[name='itemTypeAim']");
-    changeMust("[name='isSeparaMail']");
+
     var activityName = $("#activityName").val();
     var pageType = $("#pageType").val();
     if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
-
+        $("[name='costCenterChoose']").removeAttr("readonly");
+        $("[name='costCenterChoose']").removeAttr("disabled");
         setCostCenterByCondition();
+        formUtil.tableFun.changeHiddenMustByTableParam({
+            name: 'userAimTable',
+            colNum: c13
+        });
     }
+    //在进行出库打单环节时，显示快递单号且必填，其他环节隐藏
+    deleverCodeHideOrShow();
 });
 
 //生成流程主题规则
@@ -101,8 +138,7 @@ function setBussinessOption() {
             setBussinessChildOption($("[name='itemType']"), 0);
             setWarehouseChildOption($("[name='itemType']"), 0);
         },
-        error: function(result) {
-        }
+        error: function(result) {}
     });
 
     console.log("setBussinessOption:" + (Date.now() - num));
@@ -133,8 +169,7 @@ function setBussinessChildOption(obj, id) {
             common.initSelect();
 
         },
-        error: function(result) {
-        }
+        error: function(result) {}
     });
 }
 //级联仓库
@@ -150,7 +185,7 @@ function setWarehouseChildOption(obj, id) {
     $("[name='itemType']").removeAttr("data-value");
 
     //成品厂&RDC
-    var activityArr = ["itemAim01", "itemAim07", "itemAim02", "itemAim03", "itemAim04"];
+    var activityArr = ["itemAim01", "itemAim07", "itemAim02", "itemAim03", "itemAim04", "itemAim09"];
     //行政仓
     var activityArr2 = ["itemAim05", "itemAim08"];
     //各子公司财务部
@@ -178,8 +213,7 @@ function setWarehouseChildOption(obj, id) {
 
                 common.initSelect();
             },
-            error: function(result) {
-            }
+            error: function(result) {}
         });
     }
 
@@ -213,8 +247,9 @@ function cleanValue() {
     });
     $("[name='userAimTable'] tbody").find("tr:gt(0)").remove();
     $("[name='allTotalMoney']").val("0");
-
+    layui.form.render("select");
 }
+
 function calculatedPrice(obj) {
     var id = $(obj).parent().attr("data-label");
     var costPrice = 0.0;
@@ -256,13 +291,13 @@ function calculatedPrice(obj) {
     $("[name='allTotalMoney']").val(allTotal);
     checkAndfomartNumber($("[name='allTotalMoney']"), 8, 2);
 }
-function getAllTotalMoney(obj) {
-}
+function getAllTotalMoney(obj) {}
 function addOnhCangeEvent() {
     $("[name = 'userAimTable'] tbody td[data-label='成本价(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
     $("[name = 'userAimTable'] tbody td[data-label='卡券面值']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
     $("[name = 'userAimTable'] tbody td[data-label='数量(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);");
     $("[name = 'userAimTable'] tbody td[data-label='商品编码']").find("input").attr("onchange", "getGoodName(this);");
+    $("[name = 'userAimTable'] tbody td[data-label='领用方式']").find("select").attr("onchange", "changeMust(this,1);");
     $("[name = 'costCenterChoose']").attr("onchange", "judgeCostCenterExistForProject(this);");
 }
 function hideImportButton() {
@@ -333,6 +368,7 @@ function getGoodName(obj) {
             success: function(result) {
                 if (result.status == '0') {
                     $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val(result.data.spuName);
+                    $(obj).parent().parent().find("td[data-label='基本单位']").find("input").val(result.data.spuUnitName);
                 } else {
                     layer.msg("商品编码不存在!");
                     $(obj).val("");
@@ -349,6 +385,13 @@ function getGoodName(obj) {
     if (text != "卡券") {
         getMovePriceInfoByOne(obj);
     }
+    var index = $(obj).parent().parent().index();
+    formUtil.tableFun.clearTargetObjValueByParam({
+        name: 'userAimTable',
+        colNum: c4,
+        //科目编码
+        rowNum: index
+    });
     // }
 }
 function giveBussinessName(obj) {
@@ -356,6 +399,14 @@ function giveBussinessName(obj) {
     var index = val.indexOf("-itemAimType");
     var type = val.substring(0, index);
     $("[name='bussiness_name']").val(type);
+    var text = $("[name='itemTypeAim'] option:selected").text();
+
+    if (text == "客勤领用" || text == "公关维护") {
+        $("[name='isPublicOrCustomer']").val("yes");
+    } else {
+        $("[name='isPublicOrCustomer']").val("no");
+    }
+
 }
 //资产类时隐藏商品编码
 function hideOrShowTableColumn(obj) {
@@ -364,14 +415,17 @@ function hideOrShowTableColumn(obj) {
     var text = $("[name='itemType'] option:selected").text();
     // var index=text.indexOf("-")+1;
     // text=text.substring(index);
-    if (text == "商品" || text == "卡券") {
-        $("[name='isCardOrCommodity']").val("yes");
-    } else {
-        $("[name='isCardOrCommodity']").val("no");
-    }
 
     switch (text) {
         case "固定资产":
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c19
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c19
+            });
             // 商品编码
             formUtil.tableFun.chooseModelHiddenByTableParam({
                 name: 'userAimTable',
@@ -437,8 +491,9 @@ function hideOrShowTableColumn(obj) {
                 name: 'userAimTable',
                 colNum: c3
             });
-
+            hideForCommodity();
             break
+
         case "卡券":
             // 商品编码
             formUtil.tableFun.chooseModelHiddenByTableParam({
@@ -470,7 +525,14 @@ function hideOrShowTableColumn(obj) {
                 name: 'userAimTable',
                 colNum: c2
             });
-
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c19
+            });
+            formUtil.tableFun.changeHiddenMustByTableParam({
+                name: 'userAimTable',
+                colNum: c19
+            });
             // 卡券名称
             formUtil.tableFun.chooseModelShowByTableParam({
                 name: 'userAimTable',
@@ -498,9 +560,18 @@ function hideOrShowTableColumn(obj) {
                 name: 'userAimTable',
                 colNum: c3
             });
-
+            hideForCommodity();
             break
         default:
+
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c19
+            });
+            formUtil.tableFun.changeShowMustByTableParam({
+                name: 'userAimTable',
+                colNum: c19
+            });
             // 商品编码
             formUtil.tableFun.chooseModelShowByTableParam({
                 name: 'userAimTable',
@@ -559,33 +630,109 @@ function hideOrShowTableColumn(obj) {
                 name: 'userAimTable',
                 colNum: c3
             });
-
+            hideForCommodity();
             break
     }
 }
-
+function hideForCommodity(obj) {
+    var text = $("[name='itemType'] option:selected").text();
+    if (text == "商品") {
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c13//科目编码
+        });
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c14//科目编码
+        });
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c15//科目编码
+        });
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c16//科目编码
+        });
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c17//科目编码
+        });
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c20//科目编码
+        });
+        //电商直播，领用方式必选
+        formUtil.tableFun.changeShowMustByTableParam({
+            name: 'userAimTable',
+            colNum: c13
+        });
+    } else {
+        //非商品类时，隐藏字段
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c13//科目编码
+        });
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c14//科目编码
+        });
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c15//科目编码
+        });
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c16//科目编码
+        });
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c17//科目编码
+        });
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c20//科目编码
+        });
+        formUtil.tableFun.changeHiddenMustByTableParam({
+            name: 'userAimTable',
+            colNum: c13
+        });
+        //非商品类时，隐藏字段
+    }
+    changeMust(obj, 2);
+}
 function changeHideOrShowForTv(obj) {
     var val = $(obj).val();
-
-    switch (val) {
-        case "YX02-itemAimType-电商直播":
-            formUtil.changeShowByName("isSeparaMail");
-            formUtil.changeShowByName("deliverWay");
-            formUtil.changeShowByName("laterDate");
-            formUtil.changeShowByName("homeAddress");
-            formUtil.changeShowByName("theUser");
-            formUtil.changeShowByName("deleverUser");
-            break
-        default:
-            formUtil.changeHiddenByName("isSeparaMail");
-            formUtil.changeHiddenByName("deliverWay");
-            formUtil.changeHiddenByName("laterDate");
-            formUtil.changeHiddenByName("homeAddress");
-            formUtil.changeHiddenByName("theUser");
-            formUtil.changeHiddenByName("deleverUser");
-            break
+    if (val == "YX02-itemAimType-电商直播") {
+        $("[name='isLiveBroadcast']").val("yes");
+    } else {
+        $("[name='isLiveBroadcast']").val("no");
     }
-    changeMust(obj);
+
+}
+function deleverCodeHideOrShow() {
+    var activityName = $("#activityName").val();
+    var pageType = $("#pageType").val();
+    if (activityName == "进行快递打单") {
+
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c18//科目编码
+        });
+        formUtil.tableFun.changeEditByTableParam({
+            name: 'userAimTable',
+            colNum: c18//科目编码
+        });
+
+    } else {
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c18//科目编码
+        });
+        formUtil.tableFun.changeHiddenMustByTableParam({
+            name: 'userAimTable',
+            colNum: c18
+        });
+    }
 }
 function chooseUser(obj) {
     var text = $("[name='wareHouse'] option:selected").text();
@@ -601,39 +748,265 @@ function chooseUser(obj) {
     }
 
     var userRdcCodeStr = $(obj).val();
-    var index = userRdcCodeStr.indexOf(";") + 1;
+    var index = userRdcCodeStr.indexOf(";");
     userRdcCodeStr = userRdcCodeStr.substring(0, index);
-    $("[name='chooseRdcUser']").val(userRdcCodeStr);
+    var userCodeArr = userRdcCodeStr.split(",");
+    var userRdcStr = "";
+    if (userCodeArr.length > 0) {
+        for (var i = 0; i < userCodeArr.length; i++) {
+            userRdcStr += userCodeArr[i] + ";";
+        }
+        $("[name='chooseRdcUser']").val(userRdcStr);
+    } else {
+        layer.alert("RDC管理员配置有误!");
+    }
+
 }
-function changeMust(obj) {
-    var itemType = $(obj).val();
-    if (itemType) {
+function changeMust(obj, id) {
+    if (id == 1) {
+        var index = $(obj).parent().parent().index();
+        var itemType = $(obj).val();
         switch (itemType) {
             case "0":
-                formUtil.changeShowMustByName("deliverWay");
-                formUtil.changeShowMustByName("homeAddress");
-                formUtil.changeShowMustByName("laterDate");
-                formUtil.changeShowMustByName("deleverUser");
-                formUtil.changeShowMustByName("theUser");
-
+                // formUtil.tableFun.changeShowMustByTableParam({
+                // name: 'userAimTable',
+                // colNum: c13,
+                // //科目编码
+                // rowNum: index
+                // });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c14,
+                    //科目编码
+                    rowNum: index
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c15,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c16,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c17,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c20,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c18,
+                    rowNum: index//科目编码
+                });
                 break;
             case "1":
-                formUtil.changeHiddenMustByName("deliverWay");
-                formUtil.changeHiddenMustByName("homeAddress");
-                formUtil.changeHiddenMustByName("laterDate");
-                formUtil.changeHiddenMustByName("deleverUser");
-                formUtil.changeHiddenMustByName("theUser");
+                // formUtil.tableFun.changeShowMustByTableParam({
+                // name: 'userAimTable',
+                // colNum: c13,
+                // rowNum: index//科目编码
+                // });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c14,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c15,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c16,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c17,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c20,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeShowMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c18,
+                    rowNum: index//科目编码
+                });
                 break;
 
             default:
-                formUtil.changeHiddenMustByName("deliverWay");
-                formUtil.changeHiddenMustByName("homeAddress");
-                formUtil.changeHiddenMustByName("laterDate");
-                formUtil.changeHiddenMustByName("deleverUser");
-                formUtil.changeHiddenMustByName("theUser");
+                // formUtil.tableFun.changeHiddenMustByTableParam({
+                // name: 'userAimTable',
+                // colNum: c13,
+                // rowNum: index//科目编码
+                // });
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c14,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c15,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c16,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c17,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c20,
+                    rowNum: index//科目编码
+                });
+                formUtil.tableFun.changeHiddenMustByTableParam({
+                    name: 'userAimTable',
+                    colNum: c18,
+                    rowNum: index//科目编码
+                });
                 break
         }
     }
+    if (id == 2) {
+        $("[name='userAimTable'] tbody").find("tr").each(function() {
+            var index = $(this).index();
+            var itemType = $(this).find("td[data-label='领用方式']").find("select").val();
+            switch (itemType) {
+                case "0":
+                    // formUtil.tableFun.changeShowMustByTableParam({
+                    // name: 'userAimTable',
+                    // colNum: c13,
+                    // //科目编码
+                    // rowNum: index
+                    // });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c14,
+                        //科目编码
+                        rowNum: index
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c15,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c16,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c17,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c20,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c18,
+                        rowNum: index//科目编码
+                    });
+                    break;
+                case "1":
+                    // formUtil.tableFun.changeShowMustByTableParam({
+                    // name: 'userAimTable',
+                    // colNum: c13,
+                    // rowNum: index//科目编码
+                    // });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c14,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c15,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c16,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c17,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c20,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeShowMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c18,
+                        rowNum: index//科目编码
+                    });
+                    break;
+
+                default:
+                    // formUtil.tableFun.changeHiddenMustByTableParam({
+                    // name: 'userAimTable',
+                    // colNum: c13,
+                    // rowNum: index//科目编码
+                    // });
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c14,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c15,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c16,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c17,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c20,
+                        rowNum: index//科目编码
+                    });
+                    formUtil.tableFun.changeHiddenMustByTableParam({
+                        name: 'userAimTable',
+                        colNum: c18,
+                        rowNum: index//科目编码
+                    });
+                    break
+            }
+
+        });
+    }
+    deleverCodeHideOrShow();
 }
 
 //选择部门的路径重构公用方法打开自定义页面
@@ -685,7 +1058,7 @@ function judgeIsOverBudget() {
                 flag = true;
             } else {
                 flag = false;
-                layer.alert(costCenter + "成本中心预算金额不足,报销明细金额超过该成本中心预算");
+                layer.alert(costCenter + "成本中心对应科目" + bussinessName + "预算金额不足,该成本中心当前期间预算为:" + budget);
                 return flag;
             }
 
@@ -740,8 +1113,7 @@ function judgeCostCenterExistForProject(obj) {
                 $("[name='text_tCDJ']").val("");
             }
         },
-        error: function(result) {
-        }
+        error: function(result) {}
     });
 }
 function getMovePriceInfoByOne(obj) {
@@ -753,7 +1125,7 @@ function getMovePriceInfoByOne(obj) {
         return;
     }
     hourse = $("[name='wareHourseCode']").val();
-    if (hourse == "不查") {
+    if (!hourse || hourse == "不查") {
         layer.msg("请手填成本价！");
         return;
     }
@@ -777,8 +1149,6 @@ function getMovePriceInfoByOne(obj) {
                         var price = jsonObj.Body["ZMM_GET_VERPR.Response"].CT_VERPR.item.VERPR;
                         if (price) {
                             $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val(price);
-                        } else {
-                            $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val("0");
                         }
                     } else {
                         layer.alert("商品" + good + "在SAP没有维护移动平均价信息！");
@@ -790,13 +1160,59 @@ function getMovePriceInfoByOne(obj) {
                     return;
                 }
             },
-            error: function(result) {
-            }
+            error: function(result) {}
         });
     }
 
 }
-
+function rowChangeEvent(obj) {
+    trCObj0 = $("[name='userAimTable']").find("tbody").find("tr").eq(0);
+    c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index();
+    c1 = trCObj0.find("td[data-label='商品名称']").index();
+    c2 = trCObj0.find("td[data-label='资产名称']").index();
+    c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index();
+    c19 = trCObj0.find("td[data-label='基本单位']").index();
+    c4 = trCObj0.find("td[data-label='数量(基本单位)']").index();
+    c5 = trCObj0.find("td[data-label='用途']").index();
+    c6 = trCObj0.find("td[data-label='总价']").index();
+    c7 = trCObj0.find("td[data-label='成本中心代码']").index();
+    c8 = trCObj0.find("td[data-label='成本中心名称']").index();
+    c9 = trCObj0.find("td[data-label='预算控制模式']").index();
+    c10 = trCObj0.find("td[data-label='成本中心预算']").index();
+    c11 = trCObj0.find("td[data-label='卡券名称']").index();
+    c12 = trCObj0.find("td[data-label='卡券面值']").index();
+    c13 = trCObj0.find("td[data-label='领用方式']").index();
+    c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index();
+    c15 = trCObj0.find("td[data-label='收获地址']").index();
+    c16 = trCObj0.find("td[data-label='收货人']").index();
+    c17 = trCObj0.find("td[data-label='寄货人']").index();
+    c20 = trCObj0.find("td[data-label='收货人电话']").index();
+    c18 = trCObj0.find("td[data-label='快递单号']").index();
+    if (common.isMobile()) {
+        c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
+        c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
+        c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
+        c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
+        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
+        c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
+        c5 = trCObj0.find("td[data-label='用途']").index() - 2;
+        c6 = trCObj0.find("td[data-label='总价']").index() - 2;
+        c7 = trCObj0.find("td[data-label='成本中心代码']").index() - 2;
+        c8 = trCObj0.find("td[data-label='成本中心名称']").index() - 2;
+        c9 = trCObj0.find("td[data-label='预算控制模式']").index() - 2;
+        c10 = trCObj0.find("td[data-label='成本中心预算']").index() - 2;
+        c11 = trCObj0.find("td[data-label='卡券名称']").index() - 2;
+        c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
+        c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
+        c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
+        c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+        c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
+        c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
+        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
+        c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
+    }
+    changeMust(obj, 2);
+}
 //收款人类型为供应商、门店、一次性供应商时默认成本中心为发起人的成本中心，名称是发起人的部门名称
 function setCostCenterByCondition1(obj) {
 
@@ -928,8 +1344,7 @@ function getCostCenter(departmentId, elementId) {
                 $("[name='text_tCDJ']").val("");
             }
         },
-        error: function(result) {
-        }
+        error: function(result) {}
     });
 }
 
@@ -979,8 +1394,7 @@ function setCostCenterByCondition(obj) {
                     return;
                 }
             },
-            error: function(result) {
-            }
+            error: function(result) {}
         });
     }
 
