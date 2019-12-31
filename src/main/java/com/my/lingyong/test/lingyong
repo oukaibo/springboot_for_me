@@ -762,7 +762,8 @@ function changeMust(obj, id) {
                 });
                 formUtil.tableFun.changeShowMustByTableParam({
                     name: 'userAimTable',
-                    colNum: c18
+                    colNum: c18,
+                    rowNum: index//科目编码
                 });
                 break;
             case "1":
@@ -798,7 +799,8 @@ function changeMust(obj, id) {
                 });
                 formUtil.tableFun.changeShowMustByTableParam({
                     name: 'userAimTable',
-                    colNum: c18
+                    colNum: c18,
+                    rowNum: index//科目编码
                 });
                 break;
 
@@ -835,7 +837,8 @@ function changeMust(obj, id) {
                 });
                 formUtil.tableFun.changeHiddenMustByTableParam({
                     name: 'userAimTable',
-                    colNum: c18
+                    colNum: c18,
+                    rowNum: index//科目编码
                 });
                 break
         }
@@ -880,7 +883,8 @@ function changeMust(obj, id) {
                     });
                     formUtil.tableFun.changeShowMustByTableParam({
                         name: 'userAimTable',
-                        colNum: c18
+                        colNum: c18,
+                        rowNum: index//科目编码
                     });
                     break;
                 case "1":
@@ -916,7 +920,8 @@ function changeMust(obj, id) {
                     });
                     formUtil.tableFun.changeShowMustByTableParam({
                         name: 'userAimTable',
-                        colNum: c18
+                        colNum: c18,
+                        rowNum: index//科目编码
                     });
                     break;
 
@@ -953,13 +958,15 @@ function changeMust(obj, id) {
                     });
                     formUtil.tableFun.changeHiddenMustByTableParam({
                         name: 'userAimTable',
-                        colNum: c18
+                        colNum: c18,
+                        rowNum: index//科目编码
                     });
                     break
             }
 
         });
     }
+    deleverCodeHideOrShow();
 }
 
 //选择部门的路径重构公用方法打开自定义页面
@@ -1011,7 +1018,7 @@ function judgeIsOverBudget() {
                 flag = true;
             } else {
                 flag = false;
-                layer.alert(costCenter + "成本中心预算金额不足,报销明细金额超过该成本中心预算");
+                layer.alert(costCenter + "成本中心预算金额不足,该成本中心当前期间预算为:" + budget);
                 return flag;
             }
 
