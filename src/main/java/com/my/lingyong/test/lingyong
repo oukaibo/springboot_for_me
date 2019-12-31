@@ -34,6 +34,29 @@ $(function() {
     c17 = trCObj0.find("td[data-label='寄货人']").index();
     c20 = trCObj0.find("td[data-label='收货人电话']").index();
     c18 = trCObj0.find("td[data-label='快递单号']").index();
+    if (common.isMobile()) {
+        c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
+        c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
+        c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
+        c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
+        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
+        c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
+        c5 = trCObj0.find("td[data-label='用途']").index() - 2;
+        c6 = trCObj0.find("td[data-label='总价']").index() - 2;
+        c7 = trCObj0.find("td[data-label='成本中心代码']").index() - 2;
+        c8 = trCObj0.find("td[data-label='成本中心名称']").index() - 2;
+        c9 = trCObj0.find("td[data-label='预算控制模式']").index() - 2;
+        c10 = trCObj0.find("td[data-label='成本中心预算']").index() - 2;
+        c11 = trCObj0.find("td[data-label='卡券名称']").index() - 2;
+        c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
+        c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
+        c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
+        c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+        c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
+        c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
+        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
+        c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
+    }
     setBussinessOption();
     addOnhCangeEvent();
     hideOrShowTableColumn($("[name='itemTypeAim']"));
@@ -69,7 +92,7 @@ $(function() {
 
     hideImportButton();
     changeHideOrShowForTv("[name='itemTypeAim']");
-    // changeMust("[name='isSeparaMail']");
+
     var activityName = $("#activityName").val();
     var pageType = $("#pageType").val();
     if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
@@ -725,9 +748,19 @@ function chooseUser(obj) {
     }
 
     var userRdcCodeStr = $(obj).val();
-    var index = userRdcCodeStr.indexOf(";") + 1;
+    var index = userRdcCodeStr.indexOf(";");
     userRdcCodeStr = userRdcCodeStr.substring(0, index);
-    $("[name='chooseRdcUser']").val(userRdcCodeStr);
+    var userCodeArr = userRdcCodeStr.split(",");
+    var userRdcStr = "";
+    if (userCodeArr.length > 0) {
+        for (var i = 0; i < userCodeArr.length; i++) {
+            userRdcStr += userCodeArr[i] + ";";
+        }
+        $("[name='chooseRdcUser']").val(userRdcStr);
+    } else {
+        layer.alert("RDC管理员配置有误!");
+    }
+
 }
 function changeMust(obj, id) {
     if (id == 1) {
@@ -1092,7 +1125,7 @@ function getMovePriceInfoByOne(obj) {
         return;
     }
     hourse = $("[name='wareHourseCode']").val();
-    if (hourse == "不查") {
+    if (!hourse || hourse == "不查") {
         layer.msg("请手填成本价！");
         return;
     }
@@ -1116,8 +1149,6 @@ function getMovePriceInfoByOne(obj) {
                         var price = jsonObj.Body["ZMM_GET_VERPR.Response"].CT_VERPR.item.VERPR;
                         if (price) {
                             $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val(price);
-                        } else {
-                            $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val("0");
                         }
                     } else {
                         layer.alert("商品" + good + "在SAP没有维护移动平均价信息！");
@@ -1157,6 +1188,29 @@ function rowChangeEvent(obj) {
     c17 = trCObj0.find("td[data-label='寄货人']").index();
     c20 = trCObj0.find("td[data-label='收货人电话']").index();
     c18 = trCObj0.find("td[data-label='快递单号']").index();
+    if (common.isMobile()) {
+        c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
+        c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
+        c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
+        c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
+        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
+        c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
+        c5 = trCObj0.find("td[data-label='用途']").index() - 2;
+        c6 = trCObj0.find("td[data-label='总价']").index() - 2;
+        c7 = trCObj0.find("td[data-label='成本中心代码']").index() - 2;
+        c8 = trCObj0.find("td[data-label='成本中心名称']").index() - 2;
+        c9 = trCObj0.find("td[data-label='预算控制模式']").index() - 2;
+        c10 = trCObj0.find("td[data-label='成本中心预算']").index() - 2;
+        c11 = trCObj0.find("td[data-label='卡券名称']").index() - 2;
+        c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
+        c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
+        c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
+        c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+        c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
+        c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
+        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
+        c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
+    }
     changeMust(obj, 2);
 }
 //收款人类型为供应商、门店、一次性供应商时默认成本中心为发起人的成本中心，名称是发起人的部门名称
