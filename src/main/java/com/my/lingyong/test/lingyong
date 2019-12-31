@@ -362,6 +362,13 @@ function getGoodName(obj) {
     if (text != "卡券") {
         getMovePriceInfoByOne(obj);
     }
+    var index = $(obj).parent().parent().index();
+    formUtil.tableFun.clearTargetObjValueByParam({
+        name: 'userAimTable',
+        colNum: c4,
+        //科目编码
+        rowNum: index
+    });
     // }
 }
 function giveBussinessName(obj) {
@@ -1018,7 +1025,7 @@ function judgeIsOverBudget() {
                 flag = true;
             } else {
                 flag = false;
-                layer.alert(costCenter + "成本中心预算金额不足,该成本中心当前期间预算为:" + budget);
+                layer.alert(costCenter + "成本中心对应科目" + bussinessName + "预算金额不足,该成本中心当前期间预算为:" + budget);
                 return flag;
             }
 
