@@ -106,6 +106,17 @@ $(function() {
     }
     //在进行出库打单环节时，显示快递单号且必填，其他环节隐藏
     deleverCodeHideOrShow();
+    formUtil.tableFun.giveTableColSetWidth({
+        tableName: 'userAimTable',
+        colArr: [{
+            'homeAddress': '500px'
+        }]
+    });
+    formUtil.tableFun.givePCTableSetWidth({
+        "tableWidthJson": {
+            "userAimTable": "2500px"
+        }
+    });
 });
 
 //生成流程主题规则
@@ -292,7 +303,6 @@ function calculatedPrice(obj) {
         totalM = isNaN(totalM) ? 0 : totalM;
         allTotal += totalM;
     })
-
     $("[name='allTotalMoney']").val(allTotal);
     checkAndfomartNumber($("[name='allTotalMoney']"), 8, 2);
 }
