@@ -117,6 +117,13 @@ $(function() {
             "userAimTable": "2500px"
         }
     });
+    var exportButtonArr = ["RDC管理员领用和出库", "进行出库开单", "进行快递打单"];
+    if (exportButtonArr.indexOf(activityName) > -1) {
+        $("[name='userAimTable']").find("tfoot").eq(0).show();
+        $("[name='userAimTable_export_btn']").show();
+    } else {
+        $("[name='userAimTable_export_btn']").hide();
+    }
 });
 
 //生成流程主题规则
@@ -353,6 +360,8 @@ function hideImportButton() {
                 $("[name='userAimTable']").find("tfoot").eq(0).show();
                 break
         }
+    } else {
+        $("[name='userAimTable']").find("tfoot").eq(0).hide();
     }
 }
 
