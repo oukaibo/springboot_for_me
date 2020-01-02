@@ -282,6 +282,11 @@ function calculatedPrice(obj) {
     checkAndfomartNumber($(obj).parent().parent().find("td[data-label='总价']").find("input"), 8, 2);
     var allTotal = 0;
 
+    var styleMobile = $("#tr_table").parent().parent().parent().attr("style");
+    if (common.isMobile() && styleMobile != undefined && styleMobile.indexOf("display: block") > -1) {
+        var index = $(tdObj).parent().index();
+        $("[name='userAimTable'] tbody").find("tr").eq(index).find("td[data-label='总价']").find("input").val(total);
+    }
     $("[name='userAimTable'] tbody").find("tr").each(function() {
         var totalM = parseFloat($(this).find("td[data-label='总价']").find("input").val());
         totalM = isNaN(totalM) ? 0 : totalM;
