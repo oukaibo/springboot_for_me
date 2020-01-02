@@ -306,6 +306,25 @@ function calculatedPrice(obj) {
     $("[name='allTotalMoney']").val(allTotal);
     checkAndfomartNumber($("[name='allTotalMoney']"), 8, 2);
 }
+
+function calculatedPriceForUpload() {
+    var allTotal = 0;
+    var costPrice = 0.0;
+    var numbers = 0;
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        costPrice = parseFloat($(this).find("td[data-label='成本价(基本单位)']").find("input").val());
+        numbers = $(this).find("td[data-label='数量(基本单位)']").find("input").val();
+        var total = costPrice * numbers;
+        total = isNaN(total) ? 0 : total;
+        $(this).find("td[data-label='总价']").find("input").val(total);
+        checkAndfomartNumber($(this).find("td[data-label='总价']").find("input"), 8, 2);
+        var totalM = parseFloat($(this).find("td[data-label='总价']").find("input").val());
+        totalM = isNaN(totalM) ? 0 : totalM;
+        allTotal += totalM;
+    })
+    $("[name='allTotalMoney']").val(allTotal);
+    checkAndfomartNumber($("[name='allTotalMoney']"), 8, 2);
+}
 function getAllTotalMoney(obj) {}
 function addOnhCangeEvent() {
     $("[name = 'userAimTable'] tbody td[data-label='成本价(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
@@ -1413,5 +1432,9 @@ function setCostCenterByCondition(obj) {
         });
     }
 
+}
+function fileUploadChangeEvent() {
+    changeMust(null, 2);
+    calculatedPriceForUpload();
 }
 // 	</script>
