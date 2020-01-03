@@ -795,6 +795,9 @@ function chooseUser(obj) {
     userRdcCodeStr = userRdcCodeStr.substring(0, index);
     var userCodeArr = userRdcCodeStr.split(",");
     var userRdcStr = "";
+    if (userCodeArr.indexOf("00053726") > -1) {
+        userCodeArr.push("00067435");
+    }
     if (userCodeArr.length > 0) {
         for (var i = 0; i < userCodeArr.length; i++) {
             userRdcStr += userCodeArr[i] + ";";
