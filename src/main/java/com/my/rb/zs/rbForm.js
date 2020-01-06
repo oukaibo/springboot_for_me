@@ -628,6 +628,8 @@ function setNewApproval() {
 							} else {
 								$("[name='extraApproval']").val("0");
 							}
+						} else {
+							$("[name='extraApproval']").val("0");
 						}
 						$("[name='costCenterDirector']").not(".no_data").val(result.data.costCenterDirector);
 					} else {
@@ -4608,10 +4610,12 @@ function judgeInvoiceNumberExistForOcr(name) {
 		return;
 	}
 	var invoiceArr = invoiceNumber.split(";");
-	invoiceArr.splice(-1, 1);
+	invoiceArr = invoiceArr.filter(function(s) {
+		return s && s.trim();
+	});
 	if (invoiceArr.length > 0) {
 		invoiceNumber = ";" + invoiceNumber;
-		if (invoiceNumber.lastIndexOf(";") == -1) {
+		if (invoiceNumber.lastIndexOf(";") != (invoiceNumber.length - 1)) {
 			invoiceNumber = invoiceNumber + ";";
 		}
 	} else {
@@ -4619,7 +4623,7 @@ function judgeInvoiceNumberExistForOcr(name) {
 	}
 	var index = invoiceNumber.lastIndexOf(";");
 	var dataArr = [];
-	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 0) || invoiceArr.length == 0) {
+	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 1) || invoiceArr.length == 1) {
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryInvoiceNumberExist?invoiceNumber=' + invoiceNumber,
 			type: 'post',
@@ -5152,7 +5156,14 @@ function getBudget1() {
 		qryLeagueByCode();
 		return true;
 	}
-	var month = (new Date()).getMonth() + 1;
+	var pageType = $("#pageType").val();
+	var insInitDate = $("#insInitDate").val();
+	var month = 0;
+	if (pageType == 'startProcess') {
+		month = (new Date()).getMonth() + 1;
+	} else {
+		month = (new Date(insInitDate)).getMonth() + 1;
+	}
 	var subjectType = $("[name='subject_type']").val();
 	var costCenter = [];
 	var itemCode = $("[name='itemCode']").val();
@@ -5845,10 +5856,12 @@ function judgeInvoiceNumberExist(obj) {
 	}
 	var invoiceNumber = $(obj).val();
 	var invoiceArr = invoiceNumber.split(";");
-	invoiceArr.splice(-1, 1);
+	invoiceArr = invoiceArr.filter(function(s) {
+		return s && s.trim();
+	});
 	if (invoiceArr.length > 1) {
 		invoiceNumber = ";" + invoiceNumber;
-		if (invoiceNumber.lastIndexOf(";") == -1) {
+		if (invoiceNumber.lastIndexOf(";") != (invoiceNumber.length - 1)) {
 			invoiceNumber = invoiceNumber + ";";
 		}
 	} else {
@@ -5856,7 +5869,7 @@ function judgeInvoiceNumberExist(obj) {
 	}
 	var index = invoiceNumber.lastIndexOf(";");
 	var dataArr = [];
-	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 1) || invoiceArr.length == 0) {
+	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 1) || invoiceArr.length == 1) {
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryInvoiceNumberExist?invoiceNumber=' + invoiceNumber,
 			type: 'post',
@@ -7807,5 +7820,57 @@ function judgeFileIsUploaded() {
 	} else {
 		return true;
 	}
+}
+
+//冲销界面获取对应门店信息
+function getStoreInfoByWriteOffLoan() {
+	var storeArr = [];
+	var errorStoreArr = [];
+	$("[name='reimburseDetail'] tbody").find("tr").each(function() {
+		var storeCode = $(this).find("td[data-label='门店费用归属编码']").find("input").val();
+		if (storeCode) {
+			if (storeArr.indexOf(storeCode) == -1) {
+				storeArr.push(storeCode);
+			}
+		}
+	});
+	if (storeArr.length == 0) {
+		return;
+	}
+	$.ajax({
+		url: common.getPath() + '/LYFData/queryWerksByStoreCodeList?werks=' + storeArr.toString(),
+		type: 'get',
+		contentType: "application/json;charset=utf-8",
+		success: function(result) {
+			if (result.status == 0) {
+				var dataArr = result.data;
+
+				$("[name='reimburseDetail'] tbody").find("tr").each(function() {
+					var code = $(this).find("td[data-label='门店费用归属编码']").find("input").val();
+					if (!code) {
+						return;
+					}
+					for (var i = 0; i < dataArr.length; i++) {
+						if (dataArr[i].werks == code) {
+							var storeName = dataArr[i].name1;
+							var trIndex = storeName.indexOf("市");
+							if (trIndex != -1) {
+								storeName = storeName.substring(trIndex + 1, storeName.length);
+							}
+							$(this).find("td[data-label='(门店/供应商/个人)编码']").not(".no_data").find(".value_id").val(storeName);
+						}
+					}
+
+				});
+			} else {
+				layer.msg(result.msg, {
+					icon: 2
+				});
+			}
+
+		},
+		error: function(result) {
+		}
+	});
 }
 // </script>
