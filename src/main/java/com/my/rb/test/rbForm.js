@@ -4,6 +4,7 @@ $(function() {
 	setIsBudgetUnlockByActivityName();
 	$("[name='mongoKey']").val("ReimburseNoIncrementIdByDateKey");
 	$("[name='processType']").val("FYBX");
+	$("[name='emailKey']").val("报销");
 	changeByIsChargeAgainst("[name='writeOffLoan']");
 	changeTableProperties();
 	addOnChangeEvent();
@@ -11,7 +12,7 @@ $(function() {
 	setBussinessOption();
 	changeColumnShowOrHide();
 	setChooseInvoiceShowOrHide();
-	judgeIsContractPayment("[name='select_YNYP']");
+	judgeIsContractPayment();
 	isProjectReimb("[name='select_BJ5k']");
 	giveDiYiHangBiaoJi();
 	changeEditByBussiness("[name='bussiness_name']");
@@ -52,15 +53,19 @@ function check_before_submit() {
 		var flag1 = setReimbursementAccount();
 		var flag2 = judgeSameCompanyOrNot();
 		var flag3 = judgeIsOverBudget();
-		//var flag4 = setSubmitTimeByBussinessName();
+		var flag4 = judgeWriteOffLoanIsLessThanLoanAmount();
 		var flag5 = queryDateConfigureInfo();
 		var falg6 = judgeExistInBlacklist();
 		var flag7 = judgeTotalEqualTaxAndOrderMoney();
 		var flag8 = judgeAmountIsOverCheckAmount();
 		var flag9 = judgeFileIsUploaded();
-		var flag10 = getWerksIsFrozen();
+		var flag10 = false;
+
+		if (flag && flag1 && flag2 && flag3 && flag4 && flag5 && falg6 && flag7 && flag8 && flag9) {
+			flag10 = getWerksIsFrozen();
+		}
 		if (subjectType == '09') {
-			if (flag && flag1 && flag2 && flag3 && flag5 && falg6 && flag8 && flag9) {
+			if (flag && flag1 && flag2 && flag3 && flag4 && flag5 && falg6 && flag8 && flag9) {
 				//judgeUserIsHeadOrSub();
 				setLinkHandlerBySubclass("[name='bussiness_name']");
 				setApprovalPower();
@@ -73,7 +78,7 @@ function check_before_submit() {
 
 		} else {
 
-			if (flag && flag1 && flag2 && flag3 && flag5 && falg6 && flag7 && flag8 && flag9 && flag10) {
+			if (flag && flag1 && flag2 && flag3 && flag4 && flag5 && falg6 && flag7 && flag8 && flag9 && flag10) {
 				//judgeUserIsHeadOrSub();
 				setLinkHandlerBySubclass("[name='bussiness_name']");
 				setApprovalPower();
@@ -502,11 +507,22 @@ function setApprovalPower() {
 
 	}
 	//新加的授权，中心总监10W，副总裁100W以上总裁 "ZXMJ06", "ZXMJ07",
-	var newBussinessArr = ["ZXMJ01", "ZXMJ02", "ZXMJ03", "ZXMJ04", "ZXMJ05", "GSJS01", "GSJS02", "WZCG01", "WZCG02", "WZCG03", "WZCG04", "WZCG05", "WZCG06", "WZCG07"]
+	var newBussinessArr = ["ZXMJ01", "ZXMJ02", "ZXMJ03", "ZXMJ04", "ZXMJ05", "GSJS01", "GSJS02"];
+	// 物资采购类权限调整
+	var newBussinessArray = ["WZCG01", "WZCG02", "WZCG03", "WZCG04", "WZCG05", "WZCG06", "WZCG07"];
 	if (newBussinessArr.indexOf(bussiness_name) != -1) {
 		if (total <= 100000) {
 			$("[name='isCentralDirector']").val("1");
 		} else if (total > 100000 && total <= 1000000) {
+			$("[name='isCentralDirector']").val("2");
+		} else {
+			$("[name='isCentralDirector']").val("3");
+		}
+	}
+	if (newBussinessArray.indexOf(bussiness_name) != -1) {
+		if (total <= 500000) {
+			$("[name='isCentralDirector']").val("1");
+		} else if (total > 500000 && total <= 3000000) {
 			$("[name='isCentralDirector']").val("2");
 		} else {
 			$("[name='isCentralDirector']").val("3");
@@ -614,6 +630,8 @@ function setNewApproval() {
 							} else {
 								$("[name='extraApproval']").val("0");
 							}
+						} else {
+							$("[name='extraApproval']").val("0");
 						}
 						$("[name='costCenterDirector']").not(".no_data").val(result.data.costCenterDirector);
 					} else {
@@ -726,6 +744,7 @@ function changeTableProperties() {
 	var payeeInfoLength = $("[name='payees'] tbody").find("tr").length;
 	var num = Date.now();
 	var activityName = $("#activityName").val();
+	var pageType = $("#pageType").val();
 	var taskStatus = $("#taskStatus").val();
 	$("#insTitle_input").attr("disabled", "disabled");
 	//申请人确认环节开放银行信息编辑权限
@@ -740,6 +759,10 @@ function changeTableProperties() {
             formUtil.tableFun.changeNotEditByTableParam({ name: 'payees', colNum: 6 });
             formUtil.tableFun.changeNotEditByTableParam({ name: 'payees', colNum: 7 });
         }*/
+	if ((activityName == '申请人确认' || activityName == '申请人填写') && pageType != "startProcess") {
+		formUtil.changeNotEditByName("subject_type");
+		formUtil.changeNotEditByName("bussiness_name");
+	}
 	if (activityName == '申请人确认' && payeeInfoLength == 1) {
 		formUtil.tableFun.changeEditByTableParam({
 			name: 'payees',
@@ -1001,10 +1024,8 @@ function changeByIsChargeAgainst(obj) {
 	switch (isChargeAgainst) {
 		case '0':
 			formUtil.changeShowByName('select_NnZP');
-			$("[name='writeOffLoanTable']").parent().prev().show();
-			$("[name='writeOffLoanTable']").show();
+			formUtil.changeShowByName("writeOffLoanTable");
 			$("[name='reimburseDetail'] tfoot tr td").find("button").hide();
-			$("[name='payees'] tfoot tr td").find("button").hide();
 			$("[name='travelInfo'] tfoot tr td").find("button").hide();
 			$("[name='travelTable'] tfoot tr td").find("button").hide();
 			if (activityName == '申请人填写' || activityName == '申请人填写()') {
@@ -1015,10 +1036,10 @@ function changeByIsChargeAgainst(obj) {
 			break;
 		case '1':
 			formUtil.changeHiddenByName('select_NnZP');
-			$("[name='writeOffLoanTable']").hide();
-			$("[name='writeOffLoanTable']").parent().prev().hide();
+			formUtil.changeHiddenByName("writeOffLoanTable");
+			//$("[name='writeOffLoanTable']").hide();
+			//$("[name='writeOffLoanTable']").parent().prev().hide();
 			$("[name='reimburseDetail'] tfoot tr td").find("button").show();
-			$("[name='payees'] tfoot tr td").find("button").show();
 			$("[name='travelInfo'] tfoot tr td").find("button").show();
 			$("[name='travelTable'] tfoot tr td").find("button").show();
 			$("[name='subject_type']").find("option[value='09']").removeAttr("disabled");
@@ -1031,8 +1052,7 @@ function changeByIsChargeAgainst(obj) {
 			break;
 		default:
 			formUtil.changeShowByName('select_NnZP');
-			$("[name='writeOffLoanTable']").parent().prev().hide();
-			$("[name='writeOffLoanTable']").hide();
+			formUtil.changeHiddenByName("writeOffLoanTable");
 			$("[name='travelInfo'] tfoot tr td").find("button").hide();
 			$("[name='reimburseDetail'] tfoot tr td").find("button").hide();
 			$("[name='travelTable'] tfoot tr td").find("button").hide();
@@ -1300,7 +1320,8 @@ function getAmount() {
 					var loanMoney = parseFloat($(writeOffLoanList[j]).find("td[data-label='借款金额']").find("input").val());
 					loanMoney = isNaN(loanMoney) ? 0 : loanMoney;
 					total = total < 0 ? 0 : total;
-					total = total - loanMoney;
+					//total = total - loanMoney;
+					total = NumUtil.minus(total, loanMoney, 2);
 					if (total < 0) {
 						$(writeOffLoanList[j]).find("td[data-label='本次冲销金额']").find("input").val(loanMoney + total);
 					} else {
@@ -1366,6 +1387,7 @@ function getAmount() {
 	}
 	if (isContractPayment == '0') {
 		$("[name='text_2iFZ']").not(".no_data").val(total);
+		checkAndfomartNumber($("[name='text_2iFZ']"), 16, 2);
 	} else {
 		$("[name='text_2iFZ']").not(".no_data").val("");
 	}
@@ -1427,7 +1449,7 @@ function convertCurrency() {
 	if (money == 0) {
 		chineseStr = cnNums[0] + cnIntLast + cnInteger;
 		$("[name='text_5hZ7']").val(chineseStr);
-		//return chineseStr;
+		return;
 	}
 	//转换为字符串
 	money = money.toString();
@@ -1628,7 +1650,9 @@ function setLinkHandlerBySubclass(obj) {
 						}
 					}
 					$("[name='isFinancialAccount_Sub']").val("0");
+					$("[name='financialAccountSubB']").val("0");
 					$("[name='isFinancialManager_Sub']").val("0");
+					$("[name='financialManagerSubB']").val("0");
 					$("[name='isCFO_Sub']").val("0");
 					$("[name='isFunctionJointSign']").val(result.dataList[0].functionJointSignH);
 				} else {
@@ -1638,7 +1662,7 @@ function setLinkHandlerBySubclass(obj) {
 					} else {
 						$("[name='isFjsRole']").val("0");
 					}
-					//财务会计-子公司
+					//财务会计-子公司1
 					if (result.dataList[0].fasMin == null || result.dataList[0].fasMax == null) {
 						$("[name='isFinancialAccount_Sub']").val(result.dataList[0].financialAccountSubsidiary);
 					} else {
@@ -1648,7 +1672,17 @@ function setLinkHandlerBySubclass(obj) {
 							$("[name='isFinancialAccount_Sub']").val("0");
 						}
 					}
-					//财务经理-子公司
+					//财务会计-子公司2
+					if (result.dataList[0].fasbMin == null || result.dataList[0].fasbMax == null) {
+						$("[name='financialAccountSubB']").val(result.dataList[0].financialAccountSubB);
+					} else {
+						if (result.dataList[0].financialAccountSubB == '1' && total >= result.dataList[0].fasbMin && total < result.dataList[0].fasbMax) {
+							$("[name='financialAccountSubB']").val("1");
+						} else {
+							$("[name='financialAccountSubB']").val("0");
+						}
+					}
+					//财务经理-子公司1
 					if (result.dataList[0].fmsMin == null || result.dataList[0].fmsMax == null) {
 						$("[name='isFinancialManager_Sub']").val(result.dataList[0].financialManagerSubsidiary);
 					} else {
@@ -1656,6 +1690,16 @@ function setLinkHandlerBySubclass(obj) {
 							$("[name='isFinancialManager_Sub']").val("1");
 						} else {
 							$("[name='isFinancialManager_Sub']").val("0");
+						}
+					}
+					//财务经理-子公司2
+					if (result.dataList[0].fmsbMin == null || result.dataList[0].fmsbMax == null) {
+						$("[name='financialManagerSubB']").val(result.dataList[0].financialManagerSubB);
+					} else {
+						if (result.dataList[0].financialManagerSubB == '1' && total >= result.dataList[0].fmsbMin && total < result.dataList[0].fmsbMax) {
+							$("[name='financialManagerSubB']").val("1");
+						} else {
+							$("[name='financialManagerSubB']").val("0");
 						}
 					}
 					//财务总监-子公司
@@ -1717,32 +1761,13 @@ function changeEditTable() {
 		formUtil.changeShowByName("travelInfo");
 		formUtil.changeShowByName("travelTable");
 		formUtil.changeHiddenByName("reimburseDetail");
-		//$("[name='travelInfo']").show();
-		//$("[name='travelInfo']").parent().prev().show();
-		//$("[name='travelTable']").show();
-		//$("[name='travelTable']").parent().prev().show();
-		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='操作']").find("i").eq(0).hide();//差旅报销时收款人只有一条信息，隐藏添加行按钮
-		//formUtil.tableFun.chooseModelShowByTableParam({name:'payees',colNum:11});
-		//切换时清空一下费用报销明细
-		//$("[name='reimburseDetail']").hide();
-		//$("[name='reimburseDetail']").parent().prev().hide();
+
 	} else {
-		/*if (subject_type == '12') {
-				formUtil.tableFun.chooseModelShowByTableParam({ name: 'reimburseDetail', colNum: 33 });
-			} else {
-				formUtil.tableFun.chooseModelHiddenByTableParam({ name: 'reimburseDetail', colNum: 33 });
-			}*/
+
 		formUtil.changeHiddenByName("travelInfo");
 		formUtil.changeHiddenByName("travelTable");
 		formUtil.changeShowByName("reimburseDetail");
-		//$("[name='reimburseDetail']").show();
-		//$("[name='reimburseDetail']").parent().prev().show();
-		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='操作']").find("i").eq(0).show();//显示添加行按钮
-		//切换时清空一下行程信息表
-		//$("[name='travelInfo']").hide();
-		//$("[name='travelInfo']").parent().prev().hide();
-		//$("[name='travelTable']").hide();
-		//$("[name='travelTable']").parent().prev().hide();
+
 	}
 	console.log("changeEditTable:" + (Date.now() - num));
 }
@@ -1867,13 +1892,45 @@ function judgeIsPurchaseOrderInSAP(obj) {
 	}
 }
 
+function setInvoiceHaveOrNotByBussinessName(obj) {
+	var bussinessName = $(obj).val();
+	if (bussinessName == 'WZCG05' || bussinessName == 'WZCG06') {
+		$("[name='reimburseDetail'] tbody").find("tr").each(function() {
+			var invoice = $(this).find("td[data-label='发票有无']").find("select").val();
+			if (!invoice) {
+				$(this).find("td[data-label='发票有无']").not(".no_data").find("select").val("有");
+			}
+		});
+		layui.form.render("select");
+	}
+}
 //业务事项控制其他信息显示字段
 function changeEditByBussiness(obj) {
 	var num = Date.now();
 	var bussinessName = $(obj).val();
 	var subjectType = $("[name='subject_type']").val();
 	var activityName = $("#activityName").val();
-	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司", "财务经理-子公司", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
+	var isInSAP = $("[name='select_yZGh']").val();
+	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司1", "财务会计-子公司2", "财务经理-子公司1", "财务经理-子公司2", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
+	if (bussinessName == 'WZCG05' || bussinessName == 'WZCG06') {
+		formUtil.tableFun.chooseModelHiddenByTableParam({
+			name: 'reimburseDetail',
+			colNum: 6
+		});
+		formUtil.tableFun.changeHiddenMustByTableParam({
+			name: 'reimburseDetail',
+			colNum: 6
+		});
+	} else {
+		formUtil.tableFun.chooseModelShowByTableParam({
+			name: 'reimburseDetail',
+			colNum: 6
+		});
+		formUtil.tableFun.changeShowMustByTableParam({
+			name: 'reimburseDetail',
+			colNum: 6
+		});
+	}
 	if (subjectType == '12' || bussinessName == 'CL05' || bussinessName == 'CL07') {
 		formUtil.changeHiddenByName("select_akGZ");
 		formUtil.changeHiddenByName("number_H3aT");
@@ -1883,13 +1940,19 @@ function changeEditByBussiness(obj) {
 		formUtil.changeHiddenMustByName("date_QmCe");
 		formUtil.changeHiddenByName("select_cDmR");
 		formUtil.changeHiddenByName("text_wSNX");
+		if (isInSAP == '1') {
+			formUtil.changeHiddenByName("purchaseOrderNo");
+			formUtil.changeHiddenByName("orderMoney");
+			formUtil.changeHiddenMustByName("purchaseOrderNo");
+		} else {
+			formUtil.changeShowByName("purchaseOrderNo");
+			formUtil.changeShowByName("orderMoney");
+			formUtil.changeShowMustByName("purchaseOrderNo");
+		}
 		formUtil.changeShowByName("select_yZGh");
-		formUtil.changeShowByName("purchaseOrderNo");
-		formUtil.changeShowByName("orderMoney");
+		formUtil.changeShowMustByName("select_yZGh");
 		formUtil.changeHiddenMustByName("select_cDmR");
 		formUtil.changeHiddenMustByName("text_wSNX");
-		formUtil.changeShowMustByName("select_yZGh");
-		formUtil.changeShowMustByName("purchaseOrderNo");
 		formUtil.changeHiddenByName("select_ApkK");
 		formUtil.changeHiddenByName("date_8etF");
 		formUtil.changeHiddenByName("bussinessGuestNum");
@@ -2262,7 +2325,7 @@ function changePayeesInfoEditApprovel() {
 function changeReimbTableColumnHidden() {
 	var activityName = $("#activityName").val();
 	var bussinessName = $("[name='bussiness_name']").val();
-	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司", "财务经理-子公司", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
+	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司1", "财务会计-子公司2", "财务经理-子公司1", "财务经理-子公司2", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
 	if (activityName == '申请人填写') {
 		formUtil.tableFun.chooseModelHiddenByTableParam({
 			name: 'reimburseDetail',
@@ -2377,7 +2440,7 @@ function changeReimbTableColumnHidden() {
 
 function changeTravelInfoTableColumnHidden() {
 	var activityName = $("#activityName").val();
-	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司", "财务经理-子公司", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
+	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司1", "财务会计-子公司2", "财务经理-子公司1", "财务经理-子公司2", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
 	if (activityArr.indexOf(activityName) != -1) {
 		formUtil.tableFun.changeNotEditByTableParam({
 			name: 'travelInfo'
@@ -2530,7 +2593,7 @@ function rowRemoveChangeEvent(obj) {
 	myRowRemove(obj);
 }
 
-//冲销部分费用明细不可删除
+//冲销部分费用明细不可���除
 function changeNotRemoveRow() {
 	var num = Date.now();
 	var amountList = $("[name='reimburseDetail'] tbody").find("tr");
@@ -2548,6 +2611,7 @@ function changeNotRemoveRow() {
 function rowChangeEvent(obj, sign) {
 	var num = Date.now();
 	var activityName = $("#activityName").val();
+	var bussinessName = $("[name='bussiness_name']").val();
 	var tableName = $(obj).parent().parent().parent().parent().attr("name");
 	var rowList = $("[name='reimburseDetail'] tbody").find("tr");
 	var dataList = $("[name='travelInfo'] tbody").find("tr");
@@ -2559,9 +2623,14 @@ function rowChangeEvent(obj, sign) {
 			changeNotRemoveRow();
 		}
 		if (tableName == 'reimburseDetail') {
+			var invoice = $(obj).parent().parent().parent().find("tr:last").find("td[data-label='发票有无']").find("select").val();
 			var currency = $(obj).parent().parent().parent().find("tr:last").find("td[data-label='币种']").find("select").val();
+			if (sign != '1' && !invoice && (bussinessName == 'WZCG05' || bussinessName == 'WZCG06')) {
+				$(obj).parent().parent().parent().find("tr:last").find("td[data-label='发票有无']").not(".no_data").find("select").val("有");
+				layui.form.render("select");
+			}
 			if (!currency) {
-				$(obj).parent().parent().parent().find("tr:last").find("td[data-label='币种']").find("select").val("CNY");
+				$(obj).parent().parent().parent().find("tr:last").find("td[data-label='币种']").not(".no_data").find("select").val("CNY");
 			}
 			var sortVal3 = $("[name='reimburseDetail'] tbody").find("tr:last").find("td[data-label='排序']").find("input").val();
 			if (sortVal3)
@@ -2603,10 +2672,20 @@ function rowChangeEvent(obj, sign) {
 	console.log("rowChangeEvent:" + (Date.now() - num));
 }
 
-//是否合同付款
-function judgeIsContractPayment(obj) {
-	var num = Date.now();
+function setContractPayment(obj) {
 	var isContractPayment = $(obj).val();
+	var total = $("[name='total']").val();
+	if (isContractPayment == '0') {
+		$("[name='text_2iFZ']").not(".no_data").val(total);
+	} else {
+		$("[name='text_2iFZ']").not(".no_data").val("");
+	}
+}
+
+//是否合同付款
+function judgeIsContractPayment() {
+	var num = Date.now();
+	var isContractPayment = $("[name='select_YNYP']").val();
 	switch (isContractPayment) {
 		case '0':
 			formUtil.changeShowMustByName("text_473H");
@@ -3161,7 +3240,13 @@ function getWerkAndLinInfo(obj) {
 // 根据工号获取员工信息
 function obtainBankInformationAccordingToWorkNumber(obj) {
 	var errorMsg = "";
-	var userId = $("#userId").val();
+	var pageType = $("#pageType").val();
+	var userId = "";
+	if (pageType == 'startProcess') {
+		userId = $("#userId").val();
+	} else {
+		userId = $("#insInitUser").val();
+	}
 	var shoukuanrentype = "";
 	var zhuanzhangMoney = "";
 	var code = null;
@@ -3185,13 +3270,14 @@ function obtainBankInformationAccordingToWorkNumber(obj) {
 		zhuanzhangMoney = $(obj).parent().parent().find("td[data-label='报销金额']").not(".no_data").find('input').val();
 		if (writeOffLoan == "0" && subjectType == "09") {
 			code = $("[name='travelInfo']").find("tbody").find("tr").eq(0).find("td[data-label='工号']").not(".no_data").find("input[type='text']").val().trim();
+			name = $("[name='travelInfo'] tbody").find("tr:eq(0)").find("td[data-label='工号']").find(".value_id").val();
 		} else {
 			code = $(obj).parent().parent().find("td[data-label='工号']").not(".no_data").find("input[type='text']").val().trim();
+			name = $(obj).parent().parent().find("td[data-label='工号']").find(".value_id").val();
 		}
 		if (code == userId) {
 			shoukuanrentype = '3';
 		}
-		name = $(obj).parent().parent().find("td[data-label='工号']").find(".value_id").val();
 
 	}
 	remark = remark.substring(0, 20);
@@ -3564,20 +3650,20 @@ function myRowRemove(obj) {
 					}
 					$('[name="payees"]').find("tbody").find("tr").eq(shoukuanrentrIndex).remove();
 				}
-			}
-		} else {
-			var detailId = $("[name = 'travelInfo'] tbody ").find("tr").eq(rowIndex).find("td[data-label='排序']").not(".no_data").find("input").val();
+			} else {
+				var detailId = $("[name = 'travelInfo'] tbody ").find("tr").eq(rowIndex).find("td[data-label='排序']").not(".no_data").find("input").val();
 
-			if (title == "travelInfo") {
-				if ($('[name="payees"]').find("tbody").find("tr").length > 1) {
-					var shoukuanrentrs = $("[name = 'payees'] tbody ").find("tr");
-					for (var i = 0; i < shoukuanrentrs.length; i++) {
-						var shoukaunrenId = $("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='排序']").not(".no_data").find("input").val();
-						if (shoukaunrenId == detailId) {
-							shoukuanrentrIndex = $("[name = 'payees'] tbody ").find("tr").eq(i).index();
+				if (title == "travelInfo") {
+					if ($('[name="payees"]').find("tbody").find("tr").length > 1) {
+						var shoukuanrentrs = $("[name = 'payees'] tbody ").find("tr");
+						for (var i = 0; i < shoukuanrentrs.length; i++) {
+							var shoukaunrenId = $("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='排序']").not(".no_data").find("input").val();
+							if (shoukaunrenId == detailId) {
+								shoukuanrentrIndex = $("[name = 'payees'] tbody ").find("tr").eq(i).index();
+							}
 						}
+						$('[name="payees"]').find("tbody").find("tr").eq(shoukuanrentrIndex).remove();
 					}
-					$('[name="payees"]').find("tbody").find("tr").eq(shoukuanrentrIndex).remove();
 				}
 			}
 		}
@@ -3624,7 +3710,7 @@ function setRemarkByTableDetail(obj) {
 	if (tableName == 'reimburseDetail') {
 		remark = $(obj).val();
 	} else {
-		remark = "室外差旅费";
+		remark = "市外差旅费";
 	}
 	remark = remark.substring(0, 20);
 	for (var i = 0; i < tableLength; i++) {
@@ -3749,7 +3835,7 @@ function setCostCenterByCondition1(obj) {
 						//getBudget($("[name='reimburseDetail'] tbody").find("tr:eq("+index+")").find("td[data-label='成本中心代码']").find("input[type='text']"));
 
 					} else {
-						layer.msg("该部门没有对应的成本中心");
+						layer.msg("该部门没有对应的成本中心,请找人力部门协调");
 						return;
 					}
 				},
@@ -3818,7 +3904,7 @@ function setCostCenterByCondition2(obj) {
 						$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心代码']").find("input[type='hidden']").val(result.data.departmentId);
 						$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心名称']").find("input").val(result.data.cstctrShortText);
 					} else {
-						layer.alert("该部门没有对应的成本中心");
+						layer.alert("该部门没有对应的成本中心,请找人力部门协调");
 						return;
 					}
 
@@ -3871,7 +3957,7 @@ function setCostCenterByUserId(obj) {
 						if (result.data.kostl) {
 							$("[name='travelInfo'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心代码']").find("input[type='text']").val(result.data.kostl);
 						} else {
-							layer.alert("该部门没有对应的成本中心");
+							layer.alert("该部门没有对应的成本中心,请找人力部门协调");
 						}
 						$("[name='travelInfo'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心代码']").find("input[type='hidden']");
 					}
@@ -4616,10 +4702,13 @@ function judgeInvoiceNumberExistForOcr(name) {
 		return;
 	}
 	var invoiceArr = invoiceNumber.split(";");
-	invoiceArr.splice(-1, 1);
+	invoiceArr = invoiceArr.filter(function(s) {
+		return s && s.trim();
+	});
+	//invoiceArr.splice(-1, 1);
 	if (invoiceArr.length > 0) {
 		invoiceNumber = ";" + invoiceNumber;
-		if (invoiceNumber.lastIndexOf(";") == -1) {
+		if (invoiceNumber.lastIndexOf(";") != (invoiceNumber.length - 1)) {
 			invoiceNumber = invoiceNumber + ";";
 		}
 	} else {
@@ -4627,7 +4716,7 @@ function judgeInvoiceNumberExistForOcr(name) {
 	}
 	var index = invoiceNumber.lastIndexOf(";");
 	var dataArr = [];
-	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 0) || invoiceArr.length == 0) {
+	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 1) || invoiceArr.length == 1) {
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryInvoiceNumberExist?invoiceNumber=' + invoiceNumber,
 			type: 'post',
@@ -4797,7 +4886,7 @@ function getVoucherMakerAndAuditer() {
 	if (activityName == '申请人填写') {
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryVoucherMakerAndAuditer?companyCode=' + companyCode,
-			type: 'post',
+			type: 'get',
 			contentType: "application/json;charset=utf-8",
 			success: function(result) {
 				if (result.code == 0) {
@@ -4817,7 +4906,7 @@ function getVoucherMakerAndAuditer() {
 function changeHiddenByActivity() {
 	var num = Date.now();
 	var activityName = $("#activityName").val();
-	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司", "财务经理-子公司", "财务总监-子公司"];
+	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司1", "财务会计-子公司2", "财务经理-子公司1", "财务经理-子公司2", "财务总监-子公司", "出纳进行付款"];
 	if (activityArr.indexOf(activityName) == -1) {
 		formUtil.changeHiddenByName("text_Pnyz");
 		formUtil.changeHiddenByName("voucherNumber");
@@ -5026,9 +5115,11 @@ function cleanSortValue() {
 		}
 	});
 	if (total == 0 || amount == trLength) {
-		formUtil.tableFun.clearTargetObjValueByParam({
-			name: 'payees'
-		});
+		$('[name="payees"]').find("tbody").find("td:lt(9) input").val("");
+		$('[name="payees"]').find("tbody").find("td:lt(9) select").val("");
+		/*formUtil.tableFun.clearTargetObjValueByParam({
+                name: 'payees'
+            });*/
 	}
 	if (subjectType == '09') {
 		formUtil.tableFun.clearTargetObjValueByParam({
@@ -5043,7 +5134,7 @@ function cleanSortValue() {
 		});
 	}
 
-	layui.form.render();
+	layui.form.render("select");
 }
 
 // //根据项目编号获取项目信息
@@ -5158,7 +5249,14 @@ function getBudget1() {
 		qryLeagueByCode();
 		return true;
 	}
-	var month = (new Date()).getMonth() + 1;
+	var pageType = $("#pageType").val();
+	var insInitDate = $("#insInitDate").val();
+	var month = 0;
+	if (pageType == 'startProcess') {
+		month = (new Date()).getMonth() + 1;
+	} else {
+		month = (new Date(insInitDate)).getMonth() + 1;
+	}
 	var subjectType = $("[name='subject_type']").val();
 	var costCenter = [];
 	var itemCode = $("[name='itemCode']").val();
@@ -5261,7 +5359,7 @@ function judgeIsOverItemBudget() {
 	var flag = false;
 	var total = parseFloat($("[name='total']").val());
 	total = isNaN(total) ? 0 : total;
-	var projectCostCenter = $("[name='projectCost']").val();
+	var projectCostCenter = $("[name='projectCostCenter']").val();
 	var subjectType = $("[name='subject_type']").val();
 	var tableName = "";
 	if (subjectType == '09') {
@@ -5455,14 +5553,12 @@ function changeShowOrHideByBillType() {
 		var billType = $(this).find("td[data-label='票据类型']").find("select").val();
 		var index = $(this).index();
 		if (billType == '2' || billType == '4' || billType == '6') {
-			if (billType == '2') {
-				formUtil.tableFun.changeShowMustByTableParam({
-					name: 'travelInfo',
-					rowNum: index,
-					colNum: 3
-				});
-			}
-			if (activityName == '申请人填写') {
+			formUtil.tableFun.changeShowMustByTableParam({
+				name: 'travelInfo',
+				rowNum: index,
+				colNum: 3
+			});
+			if (activityName == '申请人填写' || activityName == '申请人确认') {
 				formUtil.tableFun.changeEditByTableParam({
 					name: 'travelInfo',
 					rowNum: index,
@@ -5611,11 +5707,12 @@ function hideOrShowImgUpload() {
 	var switchOcrStatus = $("[name='switchOcrStatus']").val();
 	var num = Date.now();
 	var activityName = $("#activityName").val();
-	var subject_type = $("[name='subject_type']").val();
-	if (subject_type == null || subject_type.trim() == "" || subject_type == undefined) {
+	var subjectType = $("[name='subject_type']").val();
+	subjectType = subjectType.trim();
+	var writeOffLoan = $("[name='writeOffLoan']").val();
+	if (!subjectType) {
 		$("[name='PnZp']").parent().hide();
 	} else {
-
 		if (switchOcrStatus == "开") {
 			$("[name='PnZp']").parent().show();
 		} else {
@@ -5624,7 +5721,7 @@ function hideOrShowImgUpload() {
 
 	}
 
-	if (($("[name='writeOffLoan']").val() == "0") && ($("[name='subject_type']").val() == "09")) {
+	if (writeOffLoan == '0' && subjectType == "09") {
 		$("[name='travelInfo'] tbody").find("td[data-label='排序']").find("input").val("");
 		$("[name='payees'] tbody").find("td[data-label='排序']").find("input").val("");
 
@@ -5765,7 +5862,9 @@ function createRBNoInForm() {
 	var isFinancialManager_Head = $("[name='isFinancialManager_Head']").val();
 	var isCFO_Head = $("[name='isCFO_Head']").val();
 	var isFinancialAccount_Sub = $("[name='isFinancialAccount_Sub']").val();
+	var financialAccountSubB = $("[name='financialAccountSubB']").val();
 	var isFinancialManager_Sub = $("[name='isFinancialManager_Sub']").val();
+	var financialManagerSubB = $("[name='financialManagerSubB']").val();
 	var isCFO_Sub = $("[name='isCFO_Sub']").val();
 	var reimburseNumber = $("[name='reimburseNumber']").val();
 	var formData = {
@@ -5784,7 +5883,9 @@ function createRBNoInForm() {
 		"isFinancialManager_Head": isFinancialManager_Head,
 		"isCFO_Head": isCFO_Head,
 		"isFinancialAccount_Sub": isFinancialAccount_Sub,
+		"financialAccountSubB": financialAccountSubB,
 		"isFinancialManager_Sub": isFinancialManager_Sub,
+		"financialManagerSubB": financialManagerSubB,
 		"isCFO_Sub": isCFO_Sub
 	};
 	if (pageType == 'startProcess' || !reimburseNumber) {
@@ -5844,12 +5945,20 @@ function showOrHideMustByRepayment(obj) {
 function judgeInvoiceNumberExist(obj) {
 	var index = $(obj).parent().parent().index();
 	var tableName = $(obj).parent().parent().parent().parent().attr("name");
+	var dataLabelName = "";
+	if (tableName == 'reimburseDetail') {
+		dataLabelName = "发票类型";
+	} else {
+		dataLabelName = "票据类型";
+	}
 	var invoiceNumber = $(obj).val();
 	var invoiceArr = invoiceNumber.split(";");
-	invoiceArr.splice(-1, 1);
+	invoiceArr = invoiceArr.filter(function(s) {
+		return s && s.trim();
+	});
 	if (invoiceArr.length > 1) {
 		invoiceNumber = ";" + invoiceNumber;
-		if (invoiceNumber.lastIndexOf(";") == -1) {
+		if (invoiceNumber.lastIndexOf(";") != (invoiceNumber.length - 1)) {
 			invoiceNumber = invoiceNumber + ";";
 		}
 	} else {
@@ -5857,7 +5966,7 @@ function judgeInvoiceNumberExist(obj) {
 	}
 	var index = invoiceNumber.lastIndexOf(";");
 	var dataArr = [];
-	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 1) || invoiceArr.length == 0) {
+	if ((index == (invoiceNumber.length - 1) && invoiceArr.length > 1) || invoiceArr.length == 1) {
 		$.ajax({
 			url: common.getPath() + '/LYFSynRB/queryInvoiceNumberExist?invoiceNumber=' + invoiceNumber,
 			type: 'post',
@@ -5874,7 +5983,8 @@ function judgeInvoiceNumberExist(obj) {
 				} else {
 					$("[name='" + tableName + "'] tbody").find("tr").each(function() {
 						var invoiceNo = $(this).find("td[data-label='发票号']").find("input").val();
-						if (!invoiceNo) {
+						var invoiceType = $(this).find("td[data-label='" + dataLabelName + "']").find("select").val();
+						if (!invoiceNo && (invoiceType == '2' || invoiceType == '4' || invoiceType == '6')) {
 							$(this).find("td[data-label='发票号']").not(".no_data").find("input").val(invoiceNumber);
 						}
 
@@ -6243,8 +6353,8 @@ function queryConstractInfo(obj) {
 			type: 'get',
 			contentType: "application/json;charset=utf-8",
 			success: function(result) {
-				if (result.view == undefined || result.view == "") {
-					layer.msg("合同信息不存在", {
+				if (!result.view) {
+					layer.msg("合同编码:" + contractNo + "对应合同信息不存在", {
 						icon: 2
 					});
 					return;
@@ -6252,7 +6362,7 @@ function queryConstractInfo(obj) {
 				//合同名称
 				$("[name='text_daXD']").val(result.view.contractName);
 				//首尾款
-				$("[name='number_Jb5c']").val(result.view.contractName);
+				//$("[name='number_Jb5c']").val(result.view.contractName);
 				//总标的金额
 				$("[name='number_ZAya']").val(result.view.contractAmount);
 				//已支付金额
@@ -6270,7 +6380,7 @@ function queryConstractInfo(obj) {
 	}
 }
 
-//输入项目关联项目预算
+//输入项目关联项���预算
 function queryProjectBudget(obj) {
 	//项目编码
 	var itemCode = $(obj).val();
@@ -6533,14 +6643,14 @@ function queryDateConfigureInfo() {
 				yesOrNo = result.data.extrea
 			}
 			if (activityName == '申请人填写') {
-				if (FinancedateStr < sysDate && yesOrNo == '否') {
+				if (FinancedateStr < sysDate && yesOrNo == '是') {
 					layer.alert("报销申请提交时间为每月" + FinancedateStr + "日以前,请于每月" + FinancedateStr + "号之前发起申请");
 					flag = false;
 				} else {
 					flag = true;
 				}
 			} else if (activityArr.indexOf(activityName) != -1) {
-				if (BusdateStr < sysDate && result.data.extrea == '否') {
+				if (BusdateStr < sysDate && result.data.extrea == '是') {
 					layer.alert("报销业务审核时间为每月" + BusdateStr + "日以前,请于每月" + BusdateStr + "号之前完成审批");
 					flag = false;
 				} else {
@@ -6658,7 +6768,7 @@ function SetFinancialReviewer() {
 	var userId = $("#userId").val();
 	var activityName = $("#activityName").val();
 	var financialReviewer = $("[name='financialReviewer']").val();
-	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司", "财务经理-子公司", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
+	var activityArr = ["财务审核-日常类-总", "财务审核-维护类-总", "财务审核-采购-成品-总", "财务审核-采购-辅材-总", "财务审核-预留A", "财务审核-预留B", "实业财经部经理-总", "财务管理部经理-总", "财务总监-总部", "财务会计-子公司1", "财务会计-子公司2", "财务经理-子公司1", "财务经理-子公司2", "财务总监-子公司", "财务再次审核单据", "出纳进行付款"];
 	if (activityArr.indexOf(activityName) != -1) {
 		if (!financialReviewer) {
 			$("[name='financialReviewer']").val(userId);
@@ -7229,17 +7339,12 @@ function changePayeesHideOrShow() {
 		});
 	}
 	if (payment > 0) {
-		$("[name='payees']").show();
-		$("[name='payees']").parent().prev().show();
+		formUtil.changeShowByName("payees");
 	} else {
-		$("[name='payees']").hide();
-		$("[name='payees']").parent().prev().hide();
-		//$('[name="payees"]').find("tbody").find("tr:gt(0)").remove();
+		formUtil.changeHiddenByName("payees");
+		//$("[name='payees']").hide();
+		//$("[name='payees']").parent().prev().hide();
 
-		// 删除下标大于0的tr
-
-		//$("[name='payees'] tbody").find("tr").eq(0).find("td[data-label='收款人类型']").find("select").val("");
-		//layui.form.render();
 	}
 	console.log("changePayeesHideOrShow:" + (Date.now() - num));
 }
@@ -7278,10 +7383,14 @@ function setInvoiceHaveOrNotByType(obj) {
 	var invoiceType = $(obj).val();
 	var index = $(obj).parent().parent().index();
 	var tableName = $(obj).parent().parent().parent().parent().attr("name");
-	if (invoiceType == '1')
+	if (invoiceType == '1') {
 		$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='发票有无']").not(".no_data").find("select").val("无");
-	else
+	} else {
 		$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='发票有无']").not(".no_data").find("select").val("有");
+	}
+	if (invoiceType == '1' || invoiceType == '3' || invoiceType == '5') {
+		$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='发票号']").not(".no_data").find("input").val("");
+	}
 	layui.form.render("select");
 	console.log("setInvoiceHaveOrNotByType:" + (Date.now() - num));
 }
@@ -7647,7 +7756,7 @@ function changeVisiableForProject() {
 	console.log("changeVisiableForProject:" + (Date.now() - num));
 }
 
-//根据环节设定驳回发起人时是否触发预算解锁隐藏值
+//根据环节设定驳回发起���时是否触发预算解锁隐藏值
 function setIsBudgetUnlockByActivityName() {
 	var checkBudgetAndAmount = $("[name='checkBudgetAndAmount']").val();
 	if (!checkBudgetAndAmount) {
@@ -7806,5 +7915,128 @@ function judgeFileIsUploaded() {
 	} else {
 		return true;
 	}
+}
+
+//冲销的时候校验借款单对应的借款金额与实时借款单对应借款金额是否一致
+function judgeWriteOffLoanIsLessThanLoanAmount() {
+	var writeOffLoan = $("[name='writeOffLoan']").val();
+	var pageType = $("#pageType").val();
+	var userUid = "";
+	var flag = false;
+	if (pageType == 'startProcess') {
+		userUid = $("#userId").val();
+	} else {
+		userUid = $("#insInitUser").val();
+	}
+	if (writeOffLoan == '1') {
+		return true;
+	}
+	//核销单号对应实际冲销金额单号集合
+	var errorLoanNumArr = [];
+	//已核销完毕单号
+	var errorLoanArr = [];
+	$.ajax({
+		url: common.getPath() + '/LYFSynRB/queryLoanAmountByUser?userUid=' + userUid,
+		type: 'get',
+		contentType: "application/json;charset=utf-8",
+		async: false,
+		success: function(result) {
+			if (result.status == 0) {
+				var dataJson = result.data;
+				$("[name='writeOffLoanTable'] tbody").find("tr").each(function() {
+					var writeoffAmount = parseFloat($(this).find("td[data-label='本次冲销金额']").find("input").val());
+					writeoffAmount = isNaN(writeoffAmount) ? 0 : writeoffAmount;
+					var loanNum = $(this).find("td:eq(0)").find("input[type='text']").val();
+					var loanAmount = dataJson[loanNum];
+					loanAmount = parseFloat(loanAmount);
+					if (!loanAmount) {
+						if (errorLoanArr.indexOf(loanNum) == -1) {
+							errorLoanArr.push(loanNum);
+						}
+					}
+					loanAmount = isNaN(loanAmount) ? 0 : loanAmount;
+					if (writeoffAmount > loanAmount) {
+						if (errorLoanNumArr.indexOf(loanNum) == -1) {
+							errorLoanNumArr.push(loanNum);
+						}
+					}
+				});
+			} else {
+				layer.msg(result.msg, {
+					icon: 2
+				});
+				return false;
+			}
+
+		},
+		error: function(result) {
+		}
+	});
+	if (errorLoanArr.length > 0) {
+		layer.msg("借款单:" + errorLoanArr.toString() + "已全部冲销完毕,无需再进行冲销", {
+			icon: 2
+		});
+		return false;
+	} else if (errorLoanNumArr.length > 0) {
+		layer.msg("借款单:" + errorLoanArr.toString() + "当前剩余冲销金额小于此次冲销金额,请重新选择借款单进行冲销", {
+			icon: 2
+		});
+		return false;
+	} else {
+		return true;
+	}
+
+}
+
+//冲销界面获取对应门店信息
+function getStoreInfoByWriteOffLoan() {
+	var storeArr = [];
+	var errorStoreArr = [];
+	$("[name='reimburseDetail'] tbody").find("tr").each(function() {
+		var storeCode = $(this).find("td[data-label='门店费用归属编码']").find("input").val();
+		if (storeCode) {
+			if (storeArr.indexOf(storeCode) == -1) {
+				storeArr.push(storeCode);
+			}
+		}
+	});
+	if (storeArr.length == 0) {
+		return;
+	}
+	$.ajax({
+		url: common.getPath() + '/LYFData/queryWerksByStoreCodeList?werks=' + storeArr.toString(),
+		type: 'get',
+		contentType: "application/json;charset=utf-8",
+		success: function(result) {
+			if (result.status == 0) {
+				var dataArr = result.data;
+
+				$("[name='reimburseDetail'] tbody").find("tr").each(function() {
+					var code = $(this).find("td[data-label='门店费用归属编码']").find("input").val();
+					if (!code) {
+						return;
+					}
+					for (var i = 0; i < dataArr.length; i++) {
+						if (dataArr[i].werks == code) {
+							var storeName = dataArr[i].name1;
+							var trIndex = storeName.indexOf("市");
+							if (trIndex != -1) {
+								storeName = storeName.substring(trIndex + 1, storeName.length);
+							}
+							$(this).find("td[data-label='(门店/供应商/个人)编码']").not(".no_data").find(".value_id").val(storeName);
+						}
+					}
+
+				});
+			} else {
+				layer.msg(result.msg, {
+					icon: 2
+				});
+			}
+
+		},
+		error: function(result) {
+		}
+	});
 }
 // </script>
