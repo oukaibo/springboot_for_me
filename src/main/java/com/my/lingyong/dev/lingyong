@@ -109,14 +109,14 @@ $(function() {
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'userAimTable',
         colArr: [{
-            'homeAddress': '500px'
+            'homeAddress': '180px'
         }]
     });
-    formUtil.tableFun.givePCTableSetWidth({
-        "tableWidthJson": {
-            "userAimTable": "2500px"
-        }
-    });
+    // formUtil.tableFun.givePCTableSetWidth({
+    // "tableWidthJson": {
+    // "userAimTable": "2500px"
+    // }
+    // });
     var exportButtonArr = ["RDC管理员领用和出库", "进行出库开单", "进行快递打单"];
     if (exportButtonArr.indexOf(activityName) > -1) {
         $("[name='userAimTable']").find("tfoot").eq(0).show();
@@ -535,7 +535,7 @@ function hideOrShowTableColumn(obj) {
                 colNum: c3
             });
             hideForCommodity();
-            break
+            break;
 
         case "卡券":
             // 商品编码
@@ -604,7 +604,7 @@ function hideOrShowTableColumn(obj) {
                 colNum: c3
             });
             hideForCommodity();
-            break
+            break;
         default:
 
             formUtil.tableFun.chooseModelShowByTableParam({
@@ -674,12 +674,12 @@ function hideOrShowTableColumn(obj) {
                 colNum: c3
             });
             hideForCommodity();
-            break
+            break;
     }
 }
 function hideForCommodity(obj) {
     var text = $("[name='itemType'] option:selected").text();
-    if (text == "商品") {
+    if (text == "商品" || text == "赠品" || text == "试尝品") {
         formUtil.tableFun.chooseModelShowByTableParam({
             name: 'userAimTable',
             colNum: c13//科目编码
@@ -744,8 +744,8 @@ function hideForCommodity(obj) {
     changeMust(obj, 2);
 }
 function changeHideOrShowForTv(obj) {
-    var val = $(obj).val();
-    if (val == "YX02-itemAimType-电商直播") {
+    var text = $("[name='itemType'] option:selected").text();
+    if (text == "商品" || text == "赠品" || text == "试尝品") {
         $("[name='isLiveBroadcast']").val("yes");
     } else {
         $("[name='isLiveBroadcast']").val("no");
