@@ -109,14 +109,38 @@ $(function() {
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'userAimTable',
         colArr: [{
-            'homeAddress': '180px'
+            'commodityName': '200px'
         }]
     });
-    // formUtil.tableFun.givePCTableSetWidth({
-    // "tableWidthJson": {
-    // "userAimTable": "2500px"
-    // }
-    // });
+    formUtil.tableFun.giveTableColSetWidth({
+        tableName: 'userAimTable',
+        colArr: [{
+            'cardName': '200px'
+        }]
+    });
+    formUtil.tableFun.giveTableColSetWidth({
+        tableName: 'userAimTable',
+        colArr: [{
+            'assetName': '200px'
+        }]
+    });
+    formUtil.tableFun.giveTableColSetWidth({
+        tableName: 'userAimTable',
+        colArr: [{
+            'aim': '500px'
+        }]
+    });
+    formUtil.tableFun.giveTableColSetWidth({
+        tableName: 'userAimTable',
+        colArr: [{
+            'homeAddress': '500px'
+        }]
+    });
+    formUtil.tableFun.givePCTableSetWidth({
+        "tableWidthJson": {
+            "userAimTable": "2500px"
+        }
+    });
     var exportButtonArr = ["RDC管理员领用和出库", "进行出库开单", "进行快递打单"];
     if (exportButtonArr.indexOf(activityName) > -1) {
         $("[name='userAimTable']").find("tfoot").eq(0).show();
