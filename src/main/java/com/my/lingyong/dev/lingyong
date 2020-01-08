@@ -91,11 +91,11 @@ $(function() {
     formUtil.changeNotEditByName("allTotalMoney");
 
     hideImportButton();
-    changeHideOrShowForTv("[name='itemTypeAim']");
 
     var activityName = $("#activityName").val();
     var pageType = $("#pageType").val();
     if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
+        $("[name='isLiveBroadcast']").val("no");
         $("[name='costCenterChoose']").removeAttr("readonly");
         $("[name='costCenterChoose']").removeAttr("disabled");
         setCostCenterByCondition();
@@ -338,7 +338,7 @@ function addOnhCangeEvent() {
     $("[name = 'userAimTable'] tbody td[data-label='卡券面值']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
     $("[name = 'userAimTable'] tbody td[data-label='数量(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);");
     $("[name = 'userAimTable'] tbody td[data-label='商品编码']").find("input").attr("onchange", "getGoodName(this);");
-    $("[name = 'userAimTable'] tbody td[data-label='领用方式']").find("select").attr("onchange", "changeMust(this,1);");
+    $("[name = 'userAimTable'] tbody td[data-label='领用方式']").find("select").attr("onchange", "changeMust(this,1);changeHideOrShowForTv(this);");
     $("[name = 'costCenterChoose']").attr("onchange", "judgeCostCenterExistForProject(this);");
 }
 function hideImportButton() {
@@ -744,9 +744,13 @@ function hideForCommodity(obj) {
     changeMust(obj, 2);
 }
 function changeHideOrShowForTv(obj) {
-    var text = $("[name='itemType'] option:selected").text();
-    if (text == "商品" || text == "赠品" || text == "试尝品") {
-        $("[name='isLiveBroadcast']").val("yes");
+    var val = $(obj).val();
+    if (val) {
+        if (val != "2") {
+            $("[name='isLiveBroadcast']").val("yes");
+        } else {
+            $("[name='isLiveBroadcast']").val("no");
+        }
     } else {
         $("[name='isLiveBroadcast']").val("no");
     }
