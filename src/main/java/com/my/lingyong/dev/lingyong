@@ -106,24 +106,24 @@ $(function() {
     }
     //在进行出库打单环节时，显示快递单号且必填，其他环节隐藏
     deleverCodeHideOrShow();
-    formUtil.tableFun.giveTableColSetWidth({
-        tableName: 'userAimTable',
-        colArr: [{
-            'commodityName': '200px'
-        }]
-    });
-    formUtil.tableFun.giveTableColSetWidth({
-        tableName: 'userAimTable',
-        colArr: [{
-            'cardName': '200px'
-        }]
-    });
-    formUtil.tableFun.giveTableColSetWidth({
-        tableName: 'userAimTable',
-        colArr: [{
-            'assetName': '200px'
-        }]
-    });
+    // formUtil.tableFun.giveTableColSetWidth({
+    // tableName: 'userAimTable',
+    // colArr: [{
+    // 'commodityName': '200px'
+    // }]
+    // });
+    // formUtil.tableFun.giveTableColSetWidth({
+    // tableName: 'userAimTable',
+    // colArr: [{
+    // 'cardName': '200px'
+    // }]
+    // });
+    // formUtil.tableFun.giveTableColSetWidth({
+    // tableName: 'userAimTable',
+    // colArr: [{
+    // 'assetName': '200px'
+    // }]
+    // });
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'userAimTable',
         colArr: [{
@@ -138,7 +138,7 @@ $(function() {
     });
     formUtil.tableFun.givePCTableSetWidth({
         "tableWidthJson": {
-            "userAimTable": "2500px"
+            "userAimTable": "3000px"
         }
     });
     var exportButtonArr = ["RDC管理员领用和出库", "进行出库开单", "进行快递打单"];
