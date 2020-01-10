@@ -106,24 +106,6 @@ $(function() {
     }
     //在进行出库打单环节时，显示快递单号且必填，其他环节隐藏
     deleverCodeHideOrShow();
-    // formUtil.tableFun.giveTableColSetWidth({
-    // tableName: 'userAimTable',
-    // colArr: [{
-    // 'commodityName': '200px'
-    // }]
-    // });
-    // formUtil.tableFun.giveTableColSetWidth({
-    // tableName: 'userAimTable',
-    // colArr: [{
-    // 'cardName': '200px'
-    // }]
-    // });
-    // formUtil.tableFun.giveTableColSetWidth({
-    // tableName: 'userAimTable',
-    // colArr: [{
-    // 'assetName': '200px'
-    // }]
-    // });
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'userAimTable',
         colArr: [{
@@ -148,6 +130,7 @@ $(function() {
     } else {
         $("[name='userAimTable_export_btn']").hide();
     }
+    $("#insTitle_input").attr("disabled", "disabled");
 });
 
 //生成流程主题规则
@@ -770,7 +753,7 @@ function hideForCommodity(obj) {
 function changeHideOrShowForTv(obj) {
     var val = $(obj).val();
     if (val) {
-        if (val != "2") {
+        if (val == "紧急邮寄--顺丰承接" || val == "普通邮寄--正常仓库快递承接") {
             $("[name='isLiveBroadcast']").val("yes");
         } else {
             $("[name='isLiveBroadcast']").val("no");
@@ -817,22 +800,24 @@ function chooseUser(obj) {
     } else {
         $("[name='headqAdmistiProWarhou']").val("no");
     }
-
-    var userRdcCodeStr = $(obj).val();
-    var index = userRdcCodeStr.indexOf(";");
-    userRdcCodeStr = userRdcCodeStr.substring(0, index);
-    var userCodeArr = userRdcCodeStr.split(",");
-    var userRdcStr = "";
-    if (userCodeArr.indexOf("00053726") > -1) {
-        userCodeArr.push("00067435");
-    }
-    if (userCodeArr.length > 0) {
-        for (var i = 0; i < userCodeArr.length; i++) {
-            userRdcStr += userCodeArr[i] + ";";
-        }
-        $("[name='chooseRdcUser']").val(userRdcStr);
-    } else {
-        layer.alert("RDC管理员配置有误!");
+    var tierCode = $(obj).val();
+    if (tierCode) {
+        $.ajax({
+            url: common.getPath() + '/dictionaryTier/getDictionaryTierDataList?tierCode=' + tierCode,
+            type: 'get',
+            contentType: "application/json;charset=utf-8",
+            success: function(result) {
+                var arr = result.dataList;
+                if (arr.length == 1 && (arr[0].tierDescription)) {
+                    $("[name='chooseRdcUser']").val(arr[0].tierDescription);
+                    layui.form.render("select");
+                } else {
+                    layer.msg("RDC管理员配置有误,请联系管理员!");
+                    $(obj).val("");
+                    return;
+                }
+            }
+        });
     }
 
 }
@@ -841,7 +826,7 @@ function changeMust(obj, id) {
         var index = $(obj).parent().parent().index();
         var itemType = $(obj).val();
         switch (itemType) {
-            case "0":
+            case "紧急邮寄--顺丰承接":
                 // formUtil.tableFun.changeShowMustByTableParam({
                 // name: 'userAimTable',
                 // colNum: c13,
@@ -880,7 +865,7 @@ function changeMust(obj, id) {
                     rowNum: index//科目编码
                 });
                 break;
-            case "1":
+            case "普通邮寄--正常仓库快递承接":
                 // formUtil.tableFun.changeShowMustByTableParam({
                 // name: 'userAimTable',
                 // colNum: c13,
@@ -962,7 +947,7 @@ function changeMust(obj, id) {
             var index = $(this).index();
             var itemType = $(this).find("td[data-label='领用方式']").find("select").val();
             switch (itemType) {
-                case "0":
+                case "紧急邮寄--顺丰承接":
                     // formUtil.tableFun.changeShowMustByTableParam({
                     // name: 'userAimTable',
                     // colNum: c13,
@@ -1001,7 +986,7 @@ function changeMust(obj, id) {
                         rowNum: index//科目编码
                     });
                     break;
-                case "1":
+                case "普通邮寄--正常仓库快递承接":
                     // formUtil.tableFun.changeShowMustByTableParam({
                     // name: 'userAimTable',
                     // colNum: c13,
