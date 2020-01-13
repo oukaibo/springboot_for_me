@@ -928,7 +928,7 @@ function changeTableProperties() {
 		$("#form_content_div").find("table[title='流程基本信息']").prev().find(".hide_table").click();
 		$("#form_content_div").find("table[title='业务类型']").prev().find(".hide_table").click();
 		$("#form_content_div").find("table[title='流程主题']").prev().find(".hide_table").click();
-		// $("[name = 'payees']").prev().find(".show_table").click();
+		$("[name = 'payees']").prev().find(".hide_table").click();
 		// $("[name = 'reimburseDetail']").prev().find(".show_table").click();
 
 		$("[name = 'reimburseDetail'] tbody td[data-label='科目编码']").find("i[title!='delete_input_value']").attr("onclick", "mobileRBUtil.chooseSubject(this)");
@@ -2917,7 +2917,7 @@ function getLinInfoByCode(obj) {
 
 						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='转账金额']").not(".no_data").find('input').val(zhuanzhangMoney);
 						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='附言']").not(".no_data").find('input').val(remark);
-						if (result.data[0].zkuah == "1" || !result.data[0].zkuah) {
+						if (result.data[0].zkuah == "跨行" || !result.data[0].zkuah) {
 							setSinkRoadByTotal($("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='转账金额']").not(".no_data").find('input'));
 						} else {
 							$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='汇路']").not(".no_data").find('select').val("0");
@@ -3070,7 +3070,7 @@ function getWerkAndLinInfo(obj) {
 
 						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='转账金额']").not(".no_data").find('input').val(zhuanzhangMoney);
 						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='附言']").not(".no_data").find('input').val(remark);
-						if (result.data[0].zkuah == "1" || !result.data[0].zkuah) {
+						if (result.data[0].zkuah == "跨行" || !result.data[0].zkuah) {
 							setSinkRoadByTotal($("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='转账金额']").not(".no_data").find('input'));
 						} else {
 							$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='汇路']").not(".no_data").find('select').val("0");
