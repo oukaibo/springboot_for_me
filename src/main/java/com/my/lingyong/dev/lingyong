@@ -130,9 +130,29 @@ $(function() {
     } else {
         $("[name='userAimTable_export_btn']").hide();
     }
+    chaEditForCostPrice();
     $("#insTitle_input").attr("disabled", "disabled");
 });
 
+function chaEditForCostPrice(obj) {
+    var val = $(obj).val();
+    var text = $("[name='itemType'] option:selected").text();
+    // if(val&&val!="selectOption"){
+    if (text == "固定资产") {
+        formUtil.tableFun.changeEditByTableParam({
+            name: 'userAimTable',
+            colNum: c3//科目编码
+        });
+    } else {
+        formUtil.tableFun.changeNotEditByTableParam({
+            name: 'userAimTable',
+            colNum: c3
+        });
+    }
+    // }else{
+
+    // }
+}
 //生成流程主题规则
 function setInsTitleByBussinessName(obj) {
     var bussinessName = $(obj).find("option:selected").text();
