@@ -5882,7 +5882,7 @@ function queryDateConfigureInfo() {
 	var yesOrNo = "";
 	var month = (new Date()).getMonth() + 1;
 	//中间业务审核环节
-	var activityArr = ["申请人填写(预算解锁)", "部门经理审批", "项目经理审批", "子公司总经理/中心总监审批", "项目总监审批", "副总裁审批", "职能联签"];
+	var activityArr = ["部门经理审批", "项目经理审批", "子公司总经理/中心总监审批", "项目总监审批", "副总裁审批", "职能联签"];
 	$.ajax({
 		url: common.getPath() + '/LYFSynRB/queryDateConfigureInfo?companyCode=' + companyCode + '&month=' + month,
 		type: 'get',
@@ -5897,14 +5897,14 @@ function queryDateConfigureInfo() {
 				yesOrNo = result.data.extrea
 			}
 			if (activityName == '申请人填写') {
-				if (FinancedateStr < sysDate && yesOrNo == '是') {
+				if (FinancedateStr <= sysDate && yesOrNo == '是') {
 					layer.alert("报销申请提交时间为每月" + FinancedateStr + "日以前,请于每月" + FinancedateStr + "号之前发起申请");
 					flag = false;
 				} else {
 					flag = true;
 				}
 			} else if (activityArr.indexOf(activityName) != -1) {
-				if (BusdateStr < sysDate && result.data.extrea == '是') {
+				if (BusdateStr <= sysDate && result.data.extrea == '是') {
 					layer.alert("报销业务审核时间为每月" + BusdateStr + "日以前,请于每月" + BusdateStr + "号之前完成审批");
 					flag = false;
 				} else {
