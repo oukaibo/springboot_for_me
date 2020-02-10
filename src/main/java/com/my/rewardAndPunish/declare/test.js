@@ -70,6 +70,19 @@ $(function() {
     }
 
     getGgLeaders();
+    formUtil.tableFun.giveTableColSetWidth({
+        tableName: 'table_3pmC',
+        colArr: [{
+            'table_3pmC_hb': '500px'
+        }, {
+            'table_3pmC_7': '500px'
+        }]
+    });
+    formUtil.tableFun.givePCTableSetWidth({
+        "tableWidthJson": {
+            "table_3pmC": "2500px"
+        }
+    });
     layui.form.render();
 
 })
@@ -187,29 +200,29 @@ function punishUserOnchange(obj) {
                 if (result.data.length > 0) {
                     for (var i = 0; i < result.data.length; i++) {
 
-                        if (result.data[i].zUserUid != null && result.data[i].zUserUid != undefined && result.data[i].zUserUid != "") {
-                            $(obj).parent().parent().find("td[data-label='连带处罚（直级）']").not(".no_data").find('input').val(result.data[i].zUserUid);
-                            $(obj).parent().parent().find("td[data-label='上级员工号']").not(".no_data").find('input').val(result.data[i].zUserUid);
-                        } else {
+                        if (result.data[i].curUserInfo == null || result.data[i].zUserUid == undefined || result.data[i].zUserUid == "") {
                             layer.msg("获取当前人员信息失败", {
                                 icon: 2
                             });
-                            $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input').val("");
-                            $(obj).parent().parent().find("td[data-label='连带处罚（直级）']").not(".no_data").find('input').val("");
-                            $(obj).parent().parent().find("td[data-label='连带处罚（隔级）']").not(".no_data").find('input').val("");
                             continue;
                         }
+                        if (result.data[i].zUserUid != null && result.data[i].zUserUid != undefined && result.data[i].zUserUid != "") {
+                            $(obj).parent().parent().find("td[data-label='直接领导']").not(".no_data").find('input').val(result.data[i].zUserUid);
+                            $(obj).parent().parent().find("td[data-label='上级员工号']").not(".no_data").find('input').val(result.data[i].zUserUid);
+                        } else {
+
+                            $(obj).parent().parent().find("td[data-label='直接领导']").not(".no_data").find('input').val("");
+                            $(obj).parent().parent().find("td[data-label='上级员工号']").not(".no_data").find('input').val("");
+
+                        }
                         if (result.data[i].gUserUid != null && result.data[i].gUserUid != undefined && result.data[i].gUserUid != "") {
-                            $(obj).parent().parent().find("td[data-label='连带处罚（隔级）']").not(".no_data").find('input').val(result.data[i].gUserUid);
+                            $(obj).parent().parent().find("td[data-label='隔级领导']").not(".no_data").find('input').val(result.data[i].gUserUid);
                             $(obj).parent().parent().find("td[data-label='隔级员工号']").not(".no_data").find('input').val(result.data[i].gUserUid);
                         } else {
-                            layer.msg("获取当前人员信息失败", {
-                                icon: 2
-                            });
-                            $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input').val("");
-                            $(obj).parent().parent().find("td[data-label='连带处罚（直级）']").not(".no_data").find('input').val("");
-                            $(obj).parent().parent().find("td[data-label='连带处罚（隔级）']").not(".no_data").find('input').val("");
-                            continue;
+
+                            $(obj).parent().parent().find("td[data-label='隔级领导']").not(".no_data").find('input').val(result.data[i].gUserUid);
+                            $(obj).parent().parent().find("td[data-label='隔级员工号']").not(".no_data").find('input').val(result.data[i].gUserUid);
+
                         }
                     }
                 } else {
@@ -217,8 +230,8 @@ function punishUserOnchange(obj) {
                         icon: 2
                     });
                     $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input').val("");
-                    $(obj).parent().parent().find("td[data-label='连带处罚（直级）']").not(".no_data").find('input').val("");
-                    $(obj).parent().parent().find("td[data-label='连带处罚（隔级）']").not(".no_data").find('input').val("");
+                    $(obj).parent().parent().find("td[data-label='直接领导']").not(".no_data").find('input').val("");
+                    $(obj).parent().parent().find("td[data-label='隔级领导']").not(".no_data").find('input').val("");
                 }
             }
         },
@@ -450,8 +463,14 @@ function totalMoney(obj) {
         money = "0";
         $(obj).val("0");
     }
+
     if (isNaN(money)) {
         layer.msg("请输入正确的金额");
+        $(obj).val("0");
+        return;
+    }
+    if (money < 0) {
+        layer.msg("金额不能小于0");
         $(obj).val("0");
         return;
     }
