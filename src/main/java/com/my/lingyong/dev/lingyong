@@ -132,6 +132,12 @@ $(function() {
     }
     chaEditForCostPrice();
     $("#insTitle_input").attr("disabled", "disabled");
+    //当前登录人
+    var userId = $("#userId").val();
+
+    if (activityName == '部门经理审批物品领用申请' && userId == "00000002") {
+        $("[name='isPublicOrCustomer']").val("no");
+    }
 });
 
 function chaEditForCostPrice(obj) {
@@ -365,7 +371,7 @@ function addOnhCangeEvent() {
     $("[name = 'userAimTable'] tbody td[data-label='卡券面值']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
     $("[name = 'userAimTable'] tbody td[data-label='数量(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);");
     $("[name = 'userAimTable'] tbody td[data-label='商品编码']").find("input").attr("onchange", "getGoodName(this);");
-    $("[name = 'userAimTable'] tbody td[data-label='领用方式']").find("select").attr("onchange", "changeMust(this,1);changeHideOrShowForTv(this);");
+    $("[name = 'userAimTable'] tbody td[data-label='领用方式']").find("select").attr("onchange", "changeMust(this,1);");
     $("[name = 'costCenterChoose']").attr("onchange", "judgeCostCenterExistForProject(this);");
 }
 function hideImportButton() {
@@ -770,17 +776,19 @@ function hideForCommodity(obj) {
     }
     changeMust(obj, 2);
 }
-function changeHideOrShowForTv(obj) {
-    var val = $(obj).val();
-    if (val) {
+function changeHideOrShowForTv() {
+
+    $("[name='userAimTable'] tbody").find("tr").each(function() {
+        var val = $(this).find("td[data-label='领用方式']").find("select").val();
+
         if (val == "紧急邮寄--顺丰承接" || val == "普通邮寄--正常仓库快递承接") {
             $("[name='isLiveBroadcast']").val("yes");
+            return false;
         } else {
             $("[name='isLiveBroadcast']").val("no");
         }
-    } else {
-        $("[name='isLiveBroadcast']").val("no");
-    }
+
+    })
 
 }
 function deleverCodeHideOrShow() {
@@ -810,7 +818,7 @@ function deleverCodeHideOrShow() {
 }
 function chooseUser(obj) {
     var text = $("[name='wareHouse'] option:selected").text();
-    if (text == "总部成品仓") {
+    if (text == "总部成品仓" || text == "电商成品仓" || text == "科技成品仓") {
         $("[name='headqFiniProWarhou']").val("yes");
     } else {
         $("[name='headqFiniProWarhou']").val("no");
@@ -830,12 +838,13 @@ function chooseUser(obj) {
                 var arr = result.dataList;
                 if (arr.length == 1 && (arr[0].tierDescription)) {
                     $("[name='chooseRdcUser']").val(arr[0].tierDescription);
-                    layui.form.render("select");
+
                 } else {
                     layer.msg("RDC管理员配置有误,请联系管理员!");
                     $(obj).val("");
-                    return;
+
                 }
+                layui.form.render("select");
             }
         });
     }
@@ -1150,6 +1159,7 @@ function judgeIsOverBudget() {
 function check_before_submit() {
     var activityName = $("#activityName").val();
     if (activityName == '提出物品领用申请') {
+        changeHideOrShowForTv();
         setCostCenterByCondition1();
         setInsTitleByBussinessName("[name='itemTypeAim']");
         var flag1 = getBudget1();
@@ -1418,7 +1428,7 @@ function getCostCenter(departmentId, elementId) {
                     setCostCenterByCondition1();
                 }
             } else {
-                layer.alert(result.msg);
+                layer.alert("该部门没有对应成本中心,请联系人力解决");
                 $("[name='costCenterChoose']").val("");
                 $("[name='text_tCDJ']").val("");
             }
