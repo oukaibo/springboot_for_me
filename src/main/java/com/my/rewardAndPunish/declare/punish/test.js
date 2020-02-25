@@ -185,7 +185,7 @@ function isDepartManagerOrL5() {
 }
 
 function punishUserOnchange(obj) {
-    var userCode = $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input').val();
+    var userCode = $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
     var codes = [];
     if (userCode != undefined && userCode != "")
         codes.push(userCode);
@@ -306,19 +306,21 @@ function check_before_submit() {
 
             var copyUser = "";
             for (var i = 0; i < userPunish.length; i++) {
-                if ($("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find('input').val() != "") {
-                    copyUser += $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find('input').val() + ";";
+                var punishUserCode=$("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
+                var shangJiUserCode=$("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='上级员工号']").not(".no_data").find('input').val();
+                var geJiUserCode=$("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='隔级员工号']").not(".no_data").find('input').val();
+                if ( punishUserCode!= "") {
+                    copyUser += punishUserCode + ";";
 
                 }
-                if ($("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='上级员工号']").not(".no_data").find('input').val() != "") {
-                    var zCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='上级员工号']").not(".no_data").find('input').val()
-                    zUserUidsStr += zCode + ";";
-                    leaderCodes.push(zCode);
+                if ( shangJiUserCode!= "") {
+
+                    zUserUidsStr += shangJiUserCode + ";";
+                    leaderCodes.push(shangJiUserCode);
                 }
-                if ($("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='隔级员工号']").not(".no_data").find('input').val() != "") {
-                    var gCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='隔级员工号']").not(".no_data").find('input').val()
-                    gUserUidsStr += gCode + ";";
-                    gLeaderCodes.push(gCode);
+                if (geJiUserCode != "") {
+                    gUserUidsStr += geJiUserCode + ";";
+                    gLeaderCodes.push(geJiUserCode);
                 }
             }
             $("[name='zLeaders']").val(zUserUidsStr);
@@ -451,7 +453,7 @@ function rowChangeEvent(obj) {
 function addOnchangeForGetLeader() {
     var userPunish = $("[name='table_3pmC']").find("tbody").find("tr");
     for (var i = 0; i < userPunish.length; i++) {
-        var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find("input").attr("onchange", "punishUserOnchange(this);");
+        var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find("input[type=text]").attr("onchange", "punishUserOnchange(this);");
         var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='经济处分-罚款']").not(".no_data").find("input").attr("onchange", "totalMoney(this)");
         var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='经济处分-赔款']").not(".no_data").find("input").attr("onchange", "totalMoney(this)");
 
@@ -514,9 +516,9 @@ function fileUploadChangeEvent() {
         if (peiKuan != "" && peiKuan != null && peiKuan != undefined) {
             $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='经济处分-赔款']").find("input").change();
         }
-        var userNo = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").find("input").val();
+        var userNo = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").find("input[type=hidden]").val();
         if (userNo != "" && userNo != null && userNo != undefined) {
-            $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").find("input").change();
+            $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").find("input[type=text]").change();
         }
         var faKuan = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='经济处分-罚款']").find("input").val();
         if (faKuan != "" && faKuan != null && faKuan != undefined) {
