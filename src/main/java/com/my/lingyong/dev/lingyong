@@ -123,7 +123,8 @@ $(function() {
             "userAimTable": "3000px"
         }
     });
-    var exportButtonArr = ["RDC管理员领用和出库", "进行出库开单", "进行快递打单"];
+    //隐藏导出按钮
+    var exportButtonArr = ["库存管理员领用和出库", "进行出库开单", "进行快递打单"];
     if (exportButtonArr.indexOf(activityName) > -1) {
         $("[name='userAimTable']").find("tfoot").eq(0).show();
         $("[name='userAimTable_export_btn']").show();
@@ -138,6 +139,7 @@ $(function() {
     if (activityName == '部门经理审批物品领用申请' && userId == "00000002") {
         $("[name='isPublicOrCustomer']").val("no");
     }
+    changeMust(null, 2);
 });
 
 function chaEditForCostPrice(obj) {
@@ -147,7 +149,7 @@ function chaEditForCostPrice(obj) {
     if (text == "固定资产") {
         formUtil.tableFun.changeEditByTableParam({
             name: 'userAimTable',
-            colNum: c3//科目编码
+            colNum: c3//成本价
         });
     } else {
         formUtil.tableFun.changeNotEditByTableParam({
@@ -162,12 +164,30 @@ function chaEditForCostPrice(obj) {
 //生成流程主题规则
 function setInsTitleByBussinessName(obj) {
     var bussinessName = $(obj).find("option:selected").text();
+    var itemType = $("[name='itemType']").find("option:selected").text();
     var userName = $("#userName").val();
     var insTitle = "";
-    if (userName && bussinessName) {
-        insTitle = userName + "的" + bussinessName + "申请";
+    var currentdate = getNowFormatDate();
+    if (currentdate && userName && itemType && bussinessName) {
+        insTitle = currentdate + userName + "的" + itemType + "类" + bussinessName + "申请";
         $("#insTitle_input").val(insTitle);
     }
+}
+
+function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = month + "月" + strDate + "日";
+    return currentdate;
 }
 
 //加载业务事项选项
@@ -236,8 +256,8 @@ function setWarehouseChildOption(obj, id) {
     $("[name='itemType']").removeAttr("data-value");
 
     //成品厂&RDC
-    var activityArr = ["itemAim01", "itemAim07", "itemAim02", "itemAim03", "itemAim04", "itemAim09"];
-    //行政仓
+    var activityArr = ["itemAim01", "itemAim07", "itemAim02", "itemAim03", "itemAim04", "itemAim09", "itemAim10"];
+    //行政仓&RDC
     var activityArr2 = ["itemAim05", "itemAim08"];
     //各子公司财务部
     var activityArr3 = ["itemAim06"];
@@ -323,11 +343,11 @@ function calculatedPrice(obj) {
             costPrice = $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val();
 
         }
-        numbers = parseInt($(obj).val());
+        numbers = $(obj).val();
         // checkAndfomartNumber(obj,8,2);
     }
 
-    var total = costPrice * numbers;
+    var total = NumUtil.multiply(costPrice, numbers, 2)
     total = isNaN(total) ? 0 : total;
     $(obj).parent().parent().find("td[data-label='总价']").find("input").val(total);
     checkAndfomartNumber($(obj).parent().parent().find("td[data-label='总价']").find("input"), 8, 2);
@@ -423,7 +443,113 @@ common.chooseDepart = function(elementId) {
         }
     });
 }
+common.chooseDicData = function(id, dicUid, dicCode) {
 
+    var title = "";
+    if (id == "choose_value_JDFG_hide") {
+        title = "项目信息";
+        var boo = queryCenterProject();
+        if (!boo) {
+            return;
+        }
+    }
+
+    var index = layer.open({
+        type: 2,
+        title: title,
+        shadeClose: true,
+        shade: 0.3,
+        offset: "2%",
+        area: ['600px', '90%'],
+        content: common.chooseDicDataPath(id, dicUid, dicCode),
+        success: function(layero, lockIndex) {
+            var body = layer.getChildFrame('body', lockIndex);
+            body.find('button#cancel_btn').on('click', function() {
+                layer.close(lockIndex);
+            });
+            body.find('button#sure_btn').on('click', function() {
+                layer.close(lockIndex);
+            });
+        }
+    });
+}
+
+//根据收款人类型选择数据重写选值组件打开新的自定义页面
+common.chooseDicDataPath = function(id, dicUid, dicCode) {
+    var bussinessName = $("[name='bussiness_name']").val();
+    var tdName = $("#" + id).parent().attr("data-label");
+    if (id == "choose_value_JDFG_hide") {
+        var costCenter = $("[name='costCenterChoose']").val();
+        return common.getPath() + "/LYFData/queryProject?elementId=" + id + "&isSingle=true&costCenter=" + costCenter + "&tbpmCode=" + bussinessName;
+    }
+}
+
+function queryCenterProject() {
+    //成本中心编码，这个成本中心编码怎么来，还需要问
+    //判断是否项目报销
+    var flag = false;
+    var tbpmCode = $("[name='bussiness_name']").val();
+    if (tbpmCode == "" || tbpmCode == undefined) {
+        layer.msg("请先选择领用用途");
+        flag = false;
+        return flag;
+    }
+    var costCenterCode = $("[name='costCenterChoose']").val();
+    if (!costCenterCode) {
+        layer.msg("请选择成本中心");
+        flag = false;
+        return flag;
+    }
+    $.ajax({
+        url: common.getPath() + '/LYFSynRB/queryCenterProject?costCenter=' + costCenterCode + '&tbpmCode=' + tbpmCode + '&pageSize=10&pageNum=1',
+        type: 'get',
+        contentType: "application/json;charset=utf-8",
+        async: false,
+        success: function(result) {
+            if (result.data) {
+                if (result.data.list.length == 0) {
+                    layer.msg("当前成本中心:" + costCenterCode + "对应业务事项" + tbpmCode + " 下无项目信息");
+                    flag = false;
+                } else {
+                    flag = true;
+                }
+
+            } else {
+                layer.msg("接口异常");
+                flag = false;
+            }
+            layui.form.render("select");
+        }
+    })
+
+    return flag;
+}
+
+// //根据项目编号获取项目信息
+function getProjectInfoByProjectNo(projectNumber) {// if (projectNumber) {
+// $.ajax({
+// url: common.getPath() + '/LYFSynRB/queryProjectInfo?projectNumber=' + projectNumber,
+// type: 'get',
+// contentType: "application/json;charset=utf-8",
+// success: function (result) {
+// if (result.code == "0") {
+// $("[name='text_NT5r']").val(result.data.projectName);
+// if ((result.data.projectLeader != null && result.data.projectLeader != undefined) && (result.data.projectLeaderNo != null && result.data.projectLeaderNo != undefined)) {
+// $("[name='text_drR4']").val(result.data.projectLeader + "-" + result.data.projectLeaderNo);
+// } else {
+// $("[name='text_drR4']").val("");
+// }
+
+// $("[name='projectManager']").val(result.data.projectLeaderNo);
+// $("[name='projectDirector']").val(result.data.projectDirectorNo);
+// }
+// },
+// error: function (result) {
+
+// }
+// });
+// }
+}
 //重写excel导入数据填充到数据表格补充函数
 function fileUploadChangeEvent() {
     $("[name='userAimTable'] tbody").find("tr").each(function() {
@@ -434,31 +560,57 @@ function fileUploadChangeEvent() {
 function getGoodName(obj) {
     var goodCode = $(obj).val();
     var activityName = $("#activityName").val();
+    var itemType = $("[name='itemType'] option:selected").text();
+    //物品类型
+    var itemTypeAim = $("[name='itemTypeAim'] option:selected").text();
+    //物品领用用途
+    var url = "";
     // if (activityName == '申请人填写') {
     if (goodCode.trim() != "") {
-        $.ajax({
-            url: common.getPath() + '/sysGood/getGoodInfo?skuCode=' + goodCode,
-            type: 'post',
-            async: false,
-            contentType: "application/json;charset=utf-8",
-            success: function(result) {
-                if (result.status == '0') {
-                    $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val(result.data.spuName);
-                    $(obj).parent().parent().find("td[data-label='基本单位']").find("input").val(result.data.spuUnitName);
-                } else {
-                    layer.msg("商品编码不存在!");
-                    $(obj).val("");
-                    $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val("");
-                    return;
+        if (itemType == "基金会领用") {
+            $.ajax({
+                url: common.getPath() + '/sysGood/getSkuSalePriceBySkuIdAndChannelCode?skuCodes=' + goodCode + "&channelCode=G20000000_100",
+                type: 'post',
+                async: false,
+                contentType: "application/json;charset=utf-8",
+                success: function(result) {
+                    if (result.status == '0' && result.data.length > 0) {
+                        $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val(result.data[0].skuName);
+                        $(obj).parent().parent().find("td[data-label='基本单位']").find("input").val(result.data[0].saleUnitCode);
+                        $(obj).parent().parent().find("td[data-label='成本价(基本单位)']").find("input").val(result.data[0].salePrice);
+                    } else {
+                        layer.msg("商品编码不存在!");
+                        $(obj).val("");
+                        $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val("");
+                        return;
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            $.ajax({
+                url: common.getPath() + '/sysGood/getGoodInfo?skuCode=' + goodCode,
+                type: 'post',
+                async: false,
+                contentType: "application/json;charset=utf-8",
+                success: function(result) {
+                    if (result.status == '0') {
+                        $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val(result.data.spuName);
+                        $(obj).parent().parent().find("td[data-label='基本单位']").find("input").val(result.data.spuUnitName);
+                    } else {
+                        layer.msg("商品编码不存在!");
+                        $(obj).val("");
+                        $(obj).parent().parent().find("td[data-label='商品名称']").find("input").val("");
+                        return;
+                    }
+                }
+            });
+        }
+
     }
-    var activityName = $("#activityName").val();
-    var text = $("[name='itemType'] option:selected").text();
+
     // var index=text.indexOf("-")+1;
     // text=text.substring(index);
-    if (text != "卡券") {
+    if (itemType != "卡券" && itemTypeAim != "对外捐赠") {
         getMovePriceInfoByOne(obj);
     }
     var index = $(obj).parent().parent().index();
@@ -475,9 +627,16 @@ function giveBussinessName(obj) {
     var index = val.indexOf("-itemAimType");
     var type = val.substring(0, index);
     $("[name='bussiness_name']").val(type);
-    var text = $("[name='itemTypeAim'] option:selected").text();
+    var itemType = $("[name='itemType'] option:selected").text();
+    var itemTypeAim = $("[name='itemTypeAim'] option:selected").text();
 
-    if (text == "客勤领用" || text == "公关维护") {
+    if (itemType == "基金会领用") {
+        $("[name='isFoundation']").val("yes");
+    } else {
+        $("[name='isFoundation']").val("no");
+    }
+
+    if (itemTypeAim == "客勤领用" || itemTypeAim == "公关维护") {
         $("[name='isPublicOrCustomer']").val("yes");
     } else {
         $("[name='isPublicOrCustomer']").val("no");
@@ -712,7 +871,7 @@ function hideOrShowTableColumn(obj) {
 }
 function hideForCommodity(obj) {
     var text = $("[name='itemType'] option:selected").text();
-    if (text == "商品" || text == "赠品" || text == "试尝品") {
+    if (text == "商品" || text == "赠品" || text == "试尝品" || text == "基金会领用") {
         formUtil.tableFun.chooseModelShowByTableParam({
             name: 'userAimTable',
             colNum: c13//科目编码
@@ -1105,7 +1264,10 @@ common.chooseDepartPath = function(id) {
 
 //判断填写的金额是否超过预算
 function judgeIsOverBudget() {
-
+    var itemCode = $("[name='itemCode']").val();
+    if (itemCode) {
+        return judgeIsOverItemBudget();
+    }
     var bussinessName = $("[name='bussiness_name']").val();
 
     var sysDate = new Date();
@@ -1155,14 +1317,47 @@ function judgeIsOverBudget() {
 
     return flag;
 }
+//判断填写的金额是否超出对应项目预算
+function judgeIsOverItemBudget() {
+    var flag = false;
+    var total = parseFloat($("[name='allTotalMoney']").val());
+    total = isNaN(total) ? 0 : total;
+    var projectCostCenter = $("[name='costCenterChoose']").val();
+    var subjectType = $("[name='subject_type']").val();
+    var tableName = "userAimTable";
+    var itemBudget = $("[name='" + tableName + "'] tbody").find("tr:eq(0)").find("td[data-label='成本中心预算']").find("input").val();
+    itemBudget = isNaN(parseFloat(itemBudget)) ? 0 : parseFloat(itemBudget);
+    var controlType = $("[name='" + tableName + "'] tbody").find("tr:eq(0)").find("td[data-label='预算控制模式']").find("input").val();
+    if (controlType == '不控制') {
+        flag = true;
+        return flag;
+    }
+    if (total <= itemBudget) {
+        flag = true;
+    } else {
+        layer.alert(projectCostCenter + "成本中心预算金额不足,该成本中心当前期间预算为:" + itemBudget);
+        flag = false;
+    }
+    return flag;
+
+}
 
 function check_before_submit() {
     var activityName = $("#activityName").val();
     if (activityName == '提出物品领用申请') {
+        var isFoundationVal = $("[name='isFoundation']").val();
+        // 基金会领用隐藏域字段是3月10日上线的，这次版本加了两个字段，项目编码，是否基金会领用，如果复制以前版本流程，会导致网关字段缺少，由于这个字段是必须选中基金会领用才会带出的，以前版本没有这个选项，所有这里直接赋值为no，为什么赋值为no，是因为空字符串不抽值，为什么项目编码不赋值，因为项目编码是选值组件，选值组件会抽值，即使为空也会抽值。
+        if (isFoundationVal == "" || isFoundationVal == undefined) {
+            $("[name='isFoundation']").val("no");
+        }
         changeHideOrShowForTv();
         setCostCenterByCondition1();
         setInsTitleByBussinessName("[name='itemTypeAim']");
         var flag1 = getBudget1();
+        if (!flag1) {
+            return;
+        }
+
         var flag2 = judgeIsOverBudget();
         if (flag2 && flag1) {
             return true;
@@ -1302,10 +1497,7 @@ function rowChangeEvent(obj) {
     }
     changeMust(obj, 2);
 }
-//收款人类型为供应商、门店、一次性供应商时默认成本中心为发起人的成本中心，名称是发起人的部门名称
 function setCostCenterByCondition1(obj) {
-
-    // var kostl=$("[name='costCenterChoose']").val();
     var costCenterName = $("[name='text_tCDJ']").val();
     var departmentId = $("[name='costCenterChoose']").parent().find("input[type=hidden]").val();
     var kostl = $("[name='costCenterChoose']").parent().find("input[type=text]").val();
@@ -1316,12 +1508,66 @@ function setCostCenterByCondition1(obj) {
     });
 
 }
+//获取项目对应成本中心预算
+function getItemBudget() {
+    var projectCostCenter = $("[name='costCenterChoose']").val();
+    var itemCode = $("[name='itemCode']").val();
+    var pageType = $("#pageType").val();
+    var insInitDate = $("#insInitDate").val();
+    var month = (new Date()).getMonth() + 1;
+    var bussinessName = $("[name='bussiness_name']").val();
+    var tableName = "userAimTable";
+    $.ajax({
+        url: common.getPath() + '/LYFSynRB/qryBudgetByCostCenter?costCenter=' + projectCostCenter + "&month=" + month + "&tbpmCode=" + bussinessName + "&itemCode=" + itemCode,
+        type: 'get',
+        async: false,
+        contentType: "application/json;charset=utf-8",
+        success: function(result) {
+            if (JSON.stringify(result.data) == '[]') {
+                layer.alert("成本中心" + projectCostCenter + "本月没有对应业务预算,请重新确认");
+                flag = false;
+                return flag;
+            }
+            var dataArr = result.data;
+            if (itemCode) {
+                dataArr = dataArr.filter(function(e) {
+                    return e.itemCode == itemCode;
+                });
+            } else {
+                dataArr = dataArr.filter(function(e) {
+                    return e.itemCode == null || e.itemCode == "";
+                });
+            }
+            if (dataArr.length > 0) {
+                $("[name='" + tableName + "'] tbody").find("tr").each(function() {
+                    var index = $(this).index();
+                    $("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心预算']").not(".no_data").find("input").val(dataArr[0].availableAmount);
+                    $("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='预算控制模式']").not(".no_data").find("input").val(dataArr[0].controlType);
 
+                });
+            }
+            if (dataArr.length == 0) {
+                layer.alert("成本中心" + projectCostCenter + "该业务当月没有项目预算");
+                flag = false;
+            } else {
+                flag = true;
+            }
+        },
+        error: function(result) {}
+    });
+    return flag;
+}
 function getBudget1() {
     var bussinessName = $("[name='bussiness_name']").val();
     var month = (new Date()).getMonth() + 1;
     var costCenter = [];
-    itemCode = "";
+    var itemCode = $("[name='itemCode']").val();
+    if (itemCode == null || itemCode == undefined) {
+        itemCode = "";
+    }
+    if (itemCode) {
+        return getItemBudget();
+    }
     var tableName = "";
     var flag = false;
     $("[name='userAimTable'] tbody").find("tr").each(function() {
@@ -1357,7 +1603,7 @@ function getBudget1() {
                     });
                 } else {
                     dataArr = dataArr.filter(function(e) {
-                        return e.itemCode == null;
+                        return e.itemCode == null || e.itemCode == "";
                     });
                 }
                 if (dataArr.length > 0) {
