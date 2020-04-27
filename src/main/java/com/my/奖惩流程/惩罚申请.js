@@ -59,6 +59,24 @@ $(function() {
 
 })
 
+// 是否内勤
+function judgeNeiQin(obj) {
+    var val = $(obj).val();
+    // 是内勤
+    if (val == "0") {
+        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
+        formUtil.tableFun.changeEditByTableParam({
+            name: 'table_3pmC',
+            colNum: 1,
+        });
+    } else {
+        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").show();
+        formUtil.tableFun.changeNotEditByTableParam({
+            name: 'table_3pmC',
+            colNum: 1,
+        });
+    }
+}
 //惩罚
 //获得当前登录人
 var curUserId = $("#userId").val();
@@ -190,11 +208,19 @@ function isDepartManagerOrL5() {
 
 }
 
+function accordingNeiQinGiveVal(obj) {
+    var judgeNeiQin = $("[name='judgeNeiQin']").val();
+    if ("0" == judgeNeiQin) {
+        var userCode = $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=text]').val();
+        $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val(userCode);
+    }
+}
 function punishUserOnchange(obj) {
     var userCode = $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
     var codes = [];
-    if (userCode != undefined && userCode != "")
+    if (userCode != undefined && userCode != "") {
         codes.push(userCode);
+    }
     $.ajax({
         url: common.getPath() + '/selectUser/getLeadesByUserId',
         type: 'post',

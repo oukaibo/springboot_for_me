@@ -139,7 +139,9 @@ $(function() {
     if (activityName == '部门经理审批物品领用申请' && userId == "00000002") {
         $("[name='isPublicOrCustomer']").val("no");
     }
-    changeMust(null, 2);
+    if (activityName == "提出物品领用申请") {
+        changeMust(null, 2);
+    }
 });
 
 function chaEditForCostPrice(obj) {
@@ -347,7 +349,7 @@ function calculatedPrice(obj) {
         // checkAndfomartNumber(obj,8,2);
     }
 
-    var total = NumUtil.multiply(costPrice, numbers, 2)
+    var total = NumUtil.multiply(costPrice, numbers, 2);
     total = isNaN(total) ? 0 : total;
     $(obj).parent().parent().find("td[data-label='总价']").find("input").val(total);
     checkAndfomartNumber($(obj).parent().parent().find("td[data-label='总价']").find("input"), 8, 2);
@@ -933,7 +935,10 @@ function hideForCommodity(obj) {
         });
         //非商品类时，隐藏字段
     }
-    changeMust(obj, 2);
+    var activityName = $("#activityName").val();
+    if (activityName == "提出物品领用申请") {
+        changeMust(obj, 2);
+    }
 }
 function changeHideOrShowForTv() {
 
@@ -1495,7 +1500,10 @@ function rowChangeEvent(obj) {
         c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
         c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
     }
-    changeMust(obj, 2);
+    var activityName = $("#activityName").val();
+    if (activityName == "提出物品领用申请") {
+        changeMust(null, 2);
+    }
 }
 function setCostCenterByCondition1(obj) {
     var costCenterName = $("[name='text_tCDJ']").val();
