@@ -124,13 +124,13 @@ $(function() {
         }
     });
     //隐藏导出按钮
-    var exportButtonArr = ["库存管理员领用和出库", "进行出库开单", "进行快递打单"];
-    if (exportButtonArr.indexOf(activityName) > -1) {
-        $("[name='userAimTable']").find("tfoot").eq(0).show();
-        $("[name='userAimTable_export_btn']").show();
-    } else {
-        $("[name='userAimTable_export_btn']").hide();
-    }
+    //var exportButtonArr = ["库存管理员领用和出库", "进行出库开单", "进行快递打单"];
+    //if (exportButtonArr.indexOf(activityName) > -1) {
+    //$("[name='userAimTable']").find("tfoot").eq(0).show();
+    //$("[name='userAimTable_export_btn']").show();
+    //} else {
+    //$("[name='userAimTable_export_btn']").hide();
+    //}
     chaEditForCostPrice();
     $("#insTitle_input").attr("disabled", "disabled");
     //当前登录人
@@ -139,9 +139,7 @@ $(function() {
     if (activityName == '部门经理审批物品领用申请' && userId == "00000002") {
         $("[name='isPublicOrCustomer']").val("no");
     }
-    if (activityName == "提出物品领用申请") {
-        changeMust(null, 2);
-    }
+    changeMust(null, 2);
 });
 
 function chaEditForCostPrice(obj) {
@@ -349,7 +347,7 @@ function calculatedPrice(obj) {
         // checkAndfomartNumber(obj,8,2);
     }
 
-    var total = NumUtil.multiply(costPrice, numbers, 2);
+    var total = NumUtil.multiply(costPrice, numbers, 2)
     total = isNaN(total) ? 0 : total;
     $(obj).parent().parent().find("td[data-label='总价']").find("input").val(total);
     checkAndfomartNumber($(obj).parent().parent().find("td[data-label='总价']").find("input"), 8, 2);
@@ -403,21 +401,22 @@ function hideImportButton() {
     if (activityName == '提出物品领用申请') {
         switch (itemType) {
             case "itemAim06":
-                $("[name='userAimTable']").find("tfoot").eq(0).hide();
+                $("[name='userAimTable']").find("tfoot").eq(0).find("button").hide();
                 break;
             case "itemAim05":
-                $("[name='userAimTable']").find("tfoot").eq(0).hide();
+                $("[name='userAimTable']").find("tfoot").eq(0).find("button").hide();
                 break;
             case "selectOption":
-                $("[name='userAimTable']").find("tfoot").eq(0).hide();
+                $("[name='userAimTable']").find("tfoot").eq(0).find("button").hide();
                 break;
             default:
-                $("[name='userAimTable']").find("tfoot").eq(0).show();
+                $("[name='userAimTable']").find("tfoot").eq(0).find("button").show();
                 break
         }
     } else {
-        $("[name='userAimTable']").find("tfoot").eq(0).hide();
+        $("[name='userAimTable']").find("tfoot").eq(0).find("button").hide();
     }
+    $("[name='userAimTable_export_btn']").show();
 }
 
 common.chooseDepart = function(elementId) {
@@ -982,7 +981,7 @@ function deleverCodeHideOrShow() {
 }
 function chooseUser(obj) {
     var text = $("[name='wareHouse'] option:selected").text();
-    if (text == "总部成品仓" || text == "电商成品仓" || text == "科技成品仓") {
+    if (text == "总部成品仓" || text == "电商成品仓" || text == "科技成品仓" || text == "云商成品仓") {
         $("[name='headqFiniProWarhou']").val("yes");
     } else {
         $("[name='headqFiniProWarhou']").val("no");
