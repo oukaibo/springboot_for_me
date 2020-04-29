@@ -10,6 +10,17 @@ var c7;
 var c8;
 var c9;
 var c10;
+var c11;
+var c12;
+var c13;
+var c14;
+var c15;
+var c16;
+var c17;
+var c18;
+var c19;
+var c20;
+var c21;
 var trCObj0;
 $(function() {
     trCObj0 = $("[name='userAimTable']").find("tbody").find("tr").eq(0);
@@ -17,7 +28,6 @@ $(function() {
     c1 = trCObj0.find("td[data-label='商品名称']").index();
     c2 = trCObj0.find("td[data-label='资产名称']").index();
     c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index();
-    c19 = trCObj0.find("td[data-label='基本单位']").index();
     c4 = trCObj0.find("td[data-label='数量(基本单位)']").index();
     c5 = trCObj0.find("td[data-label='用途']").index();
     c6 = trCObj0.find("td[data-label='总价']").index();
@@ -32,14 +42,15 @@ $(function() {
     c15 = trCObj0.find("td[data-label='收获地址']").index();
     c16 = trCObj0.find("td[data-label='收货人']").index();
     c17 = trCObj0.find("td[data-label='寄货人']").index();
-    c20 = trCObj0.find("td[data-label='收货人电话']").index();
     c18 = trCObj0.find("td[data-label='快递单号']").index();
+    c19 = trCObj0.find("td[data-label='基本单位']").index();
+    c20 = trCObj0.find("td[data-label='收货人电话']").index();
+    c21 = trCObj0.find("td[data-label='实际出库数量']").index();
     if (common.isMobile()) {
         c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
         c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
         c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
         c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
-        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
         c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
         c5 = trCObj0.find("td[data-label='用途']").index() - 2;
         c6 = trCObj0.find("td[data-label='总价']").index() - 2;
@@ -54,40 +65,50 @@ $(function() {
         c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
         c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
         c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
-        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
         c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
+        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
+        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
+        c21 = trCObj0.find("td[data-label='实际出库数量']").index() - 2;
     }
     setBussinessOption();
     addOnhCangeEvent();
     hideOrShowTableColumn($("[name='itemTypeAim']"));
+    // 总价
     formUtil.tableFun.changeNotEditByTableParam({
         name: 'userAimTable',
         colNum: c6
     });
+    // 成本中心代码
     formUtil.tableFun.chooseModelHiddenByTableParam({
         name: 'userAimTable',
         colNum: c7
     });
+    // 成本中心名称
     formUtil.tableFun.chooseModelHiddenByTableParam({
         name: 'userAimTable',
         colNum: c8
     });
+    // 预算控制模式
     formUtil.tableFun.chooseModelHiddenByTableParam({
         name: 'userAimTable',
         colNum: c9
     });
+    // 成本中心预算
     formUtil.tableFun.chooseModelHiddenByTableParam({
         name: 'userAimTable',
         colNum: c10
     });
+    // 商品名称
     formUtil.tableFun.changeNotEditByTableParam({
         name: 'userAimTable',
         colNum: c1
     });
+    // 基本单位
     formUtil.tableFun.changeNotEditByTableParam({
         name: 'userAimTable',
         colNum: c19
     });
+    //
     formUtil.changeNotEditByName("allTotalMoney");
 
     hideImportButton();
@@ -98,14 +119,38 @@ $(function() {
         $("[name='isLiveBroadcast']").val("no");
         $("[name='costCenterChoose']").removeAttr("readonly");
         $("[name='costCenterChoose']").removeAttr("disabled");
+        // 申请人环节窗体加载时显示申请人归属的成本中心
         setCostCenterByCondition();
         formUtil.tableFun.changeHiddenMustByTableParam({
             name: 'userAimTable',
             colNum: c13
         });
+        $("[name='isKuaiDi']").val("yes");
+        $("[name='isPresident']").val("no");
     }
+
     //在进行出库打单环节时，显示快递单号且必填，其他环节隐藏
     deleverCodeHideOrShow();
+    setTableColumnWidth();
+    //隐藏导出按钮
+    // var exportButtonArr = ["库存管理员领用和出库", "进行出库开单", "进行快递打单"];
+    // if (exportButtonArr.indexOf(activityName) > -1) {
+    //     $("[name='userAimTable']").find("tfoot").eq(0).show();
+    //     $("[name='userAimTable_export_btn']").show();
+    // } else {
+    //     $("[name='userAimTable_export_btn']").hide();
+    // }
+    chaEditForCostPrice();
+    $("#insTitle_input").attr("disabled", "disabled");
+    //当前登录人
+    // var userId = $("#userId").val();
+
+    // if (activityName == '部门经理审批物品领用申请' && userId == "00000002") {
+    //     $("[name='isPublicOrCustomer']").val("no");
+    // }
+    changeMust(null, 2);
+});
+function setTableColumnWidth() {
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'userAimTable',
         colArr: [{
@@ -123,27 +168,9 @@ $(function() {
             "userAimTable": "3000px"
         }
     });
-    //隐藏导出按钮
-    //var exportButtonArr = ["库存管理员领用和出库", "进行出库开单", "进行快递打单"];
-    //if (exportButtonArr.indexOf(activityName) > -1) {
-    //$("[name='userAimTable']").find("tfoot").eq(0).show();
-    //$("[name='userAimTable_export_btn']").show();
-    //} else {
-    //$("[name='userAimTable_export_btn']").hide();
-    //}
-    chaEditForCostPrice();
-    $("#insTitle_input").attr("disabled", "disabled");
-    //当前登录人
-    var userId = $("#userId").val();
-
-    if (activityName == '部门经理审批物品领用申请' && userId == "00000002") {
-        $("[name='isPublicOrCustomer']").val("no");
-    }
-    changeMust(null, 2);
-});
-
+}
 function chaEditForCostPrice(obj) {
-    var val = $(obj).val();
+    // var val = $(obj).val();
     var text = $("[name='itemType'] option:selected").text();
     // if(val&&val!="selectOption"){
     if (text == "固定资产") {
@@ -390,6 +417,7 @@ function addOnhCangeEvent() {
     $("[name = 'userAimTable'] tbody td[data-label='成本价(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
     $("[name = 'userAimTable'] tbody td[data-label='卡券面值']").find("input").attr("onchange", "calculatedPrice(this);checkAndfomartNumber(this,8,2);");
     $("[name = 'userAimTable'] tbody td[data-label='数量(基本单位)']").find("input").attr("onchange", "calculatedPrice(this);");
+    $("[name = 'userAimTable'] tbody td[data-label='实际出库数量']").find("input").attr("onchange", "calculatedPrice(this);");
     $("[name = 'userAimTable'] tbody td[data-label='商品编码']").find("input").attr("onchange", "getGoodName(this);");
     $("[name = 'userAimTable'] tbody td[data-label='领用方式']").find("select").attr("onchange", "changeMust(this,1);");
     $("[name = 'costCenterChoose']").attr("onchange", "judgeCostCenterExistForProject(this);");
@@ -416,6 +444,7 @@ function hideImportButton() {
     } else {
         $("[name='userAimTable']").find("tfoot").eq(0).find("button").hide();
     }
+    // 显示导出按钮
     $("[name='userAimTable_export_btn']").show();
 }
 
@@ -651,7 +680,30 @@ function hideOrShowTableColumn(obj) {
     var text = $("[name='itemType'] option:selected").text();
     // var index=text.indexOf("-")+1;
     // text=text.substring(index);
-
+    // 库存管理员领用和出库显示实际出库数量
+    if (activityName == "库存管理员领用和出库") {
+        formUtil.tableFun.chooseModelShowByTableParam({
+            name: 'userAimTable',
+            colNum: c21
+        });
+        formUtil.tableFun.changeShowMustByTableParam({
+            name: 'userAimTable',
+            colNum: c21
+        });
+        formUtil.tableFun.changeEditByTableParam({
+            name: 'userAimTable',
+            colNum: c21
+        });
+    } else {
+        formUtil.tableFun.chooseModelHiddenByTableParam({
+            name: 'userAimTable',
+            colNum: c21
+        });
+        formUtil.tableFun.changeHiddenMustByTableParam({
+            name: 'userAimTable',
+            colNum: c21
+        });
+    }
     switch (text) {
         case "固定资产":
             formUtil.tableFun.chooseModelHiddenByTableParam({
@@ -938,21 +990,25 @@ function hideForCommodity(obj) {
     if (activityName == "提出物品领用申请") {
         changeMust(obj, 2);
     }
+
 }
 function changeHideOrShowForTv() {
 
-    $("[name='userAimTable'] tbody").find("tr").each(function() {
-        var val = $(this).find("td[data-label='领用方式']").find("select").val();
-
-        if (val == "紧急邮寄--顺丰承接" || val == "普通邮寄--正常仓库快递承接") {
-            $("[name='isLiveBroadcast']").val("yes");
-            return false;
-        } else {
-            $("[name='isLiveBroadcast']").val("no");
-        }
-
-    })
-
+    // $("[name='userAimTable'] tbody").find("tr").each(function() {
+    //     var val = $(this).find("td[data-label='领用方式']").find("select").val();
+    //     if (val == "紧急邮寄--顺丰承接" || val == "普通邮寄--正常仓库快递承接") {
+    //         $("[name='isLiveBroadcast']").val("yes");
+    //         return false;
+    //     } else {
+    //         $("[name='isLiveBroadcast']").val("no");
+    //     }
+    // })
+    var wareHourse = $("[name='wareHouse']").find("option:selected").text();
+    if (wareHourse == '电商成品仓' || wareHourse == '云商成品仓' || wareHourse == '科技成品仓') {
+        $("[name='isLiveBroadcast']").val("yes");
+    } else {
+        $("[name='isLiveBroadcast']").val("no");
+    }
 }
 function deleverCodeHideOrShow() {
     var activityName = $("#activityName").val();
@@ -1345,10 +1401,42 @@ function judgeIsOverItemBudget() {
     return flag;
 
 }
+function getPresidentByDepartmentId() {
+
+    var departmentId = $("[name='costCenterChoose']").parent().find("input[type=hidden]").val();
+    if (departmentId) {
+        $.ajax({
+            url: common.getPath() + '/selectUser/getPresidentByDepartmentId?departmentId=' + departmentId,
+            type: 'post',
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            async: false,
+            success: function(result) {
+                if (result.status == 0) {
+                    if (result.data) {
+                        var presidentNo = result.data.userNo;
+                        if (presidentNo == "00000002") {
+                            $("[name='isPresident']").val("yes");
+                        } else {
+                            $("[name='isPresident']").val("no");
+                        }
+                    } else {
+                        layer.alert("成本中心部门:" + departmentId + "未找到总裁")
+                        $("[name='isPresident']").val("no");
+                    }
+                } else {
+                    $("[name='isPresident']").val("no");
+                }
+            },
+            error: function(result) {}
+        });
+    }
+}
 
 function check_before_submit() {
     var activityName = $("#activityName").val();
     if (activityName == '提出物品领用申请') {
+        getPresidentByDepartmentId();
         var isFoundationVal = $("[name='isFoundation']").val();
         // 基金会领用隐藏域字段是3月10日上线的，这次版本加了两个字段，项目编码，是否基金会领用，如果复制以前版本流程，会导致网关字段缺少，由于这个字段是必须选中基金会领用才会带出的，以前版本没有这个选项，所有这里直接赋值为no，为什么赋值为no，是因为空字符串不抽值，为什么项目编码不赋值，因为项目编码是选值组件，选值组件会抽值，即使为空也会抽值。
         if (isFoundationVal == "" || isFoundationVal == undefined) {
@@ -1357,6 +1445,18 @@ function check_before_submit() {
         changeHideOrShowForTv();
         setCostCenterByCondition1();
         setInsTitleByBussinessName("[name='itemTypeAim']");
+        var flag1 = getBudget1();
+        if (!flag1) {
+            return;
+        }
+
+        var flag2 = judgeIsOverBudget();
+        if (flag2 && flag1) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (activityName == '库存管理员领用和出库') {
         var flag1 = getBudget1();
         if (!flag1) {
             return;
@@ -1453,55 +1553,59 @@ function getMovePriceInfoByOne(obj) {
     }
 
 }
-function rowChangeEvent(obj) {
-    trCObj0 = $("[name='userAimTable']").find("tbody").find("tr").eq(0);
-    c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index();
-    c1 = trCObj0.find("td[data-label='商品名称']").index();
-    c2 = trCObj0.find("td[data-label='资产名称']").index();
-    c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index();
-    c19 = trCObj0.find("td[data-label='基本单位']").index();
-    c4 = trCObj0.find("td[data-label='数量(基本单位)']").index();
-    c5 = trCObj0.find("td[data-label='用途']").index();
-    c6 = trCObj0.find("td[data-label='总价']").index();
-    c7 = trCObj0.find("td[data-label='成本中心代码']").index();
-    c8 = trCObj0.find("td[data-label='成本中心名称']").index();
-    c9 = trCObj0.find("td[data-label='预算控制模式']").index();
-    c10 = trCObj0.find("td[data-label='成本中心预算']").index();
-    c11 = trCObj0.find("td[data-label='卡券名称']").index();
-    c12 = trCObj0.find("td[data-label='卡券面值']").index();
-    c13 = trCObj0.find("td[data-label='领用方式']").index();
-    c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index();
-    c15 = trCObj0.find("td[data-label='收获地址']").index();
-    c16 = trCObj0.find("td[data-label='收货人']").index();
-    c17 = trCObj0.find("td[data-label='寄货人']").index();
-    c20 = trCObj0.find("td[data-label='收货人电话']").index();
-    c18 = trCObj0.find("td[data-label='快递单号']").index();
-    if (common.isMobile()) {
-        c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
-        c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
-        c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
-        c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
-        c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
-        c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
-        c5 = trCObj0.find("td[data-label='用途']").index() - 2;
-        c6 = trCObj0.find("td[data-label='总价']").index() - 2;
-        c7 = trCObj0.find("td[data-label='成本中心代码']").index() - 2;
-        c8 = trCObj0.find("td[data-label='成本中心名称']").index() - 2;
-        c9 = trCObj0.find("td[data-label='预算控制模式']").index() - 2;
-        c10 = trCObj0.find("td[data-label='成本中心预算']").index() - 2;
-        c11 = trCObj0.find("td[data-label='卡券名称']").index() - 2;
-        c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
-        c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
-        c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
-        c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
-        c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
-        c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
-        c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
-        c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
-    }
-    var activityName = $("#activityName").val();
-    if (activityName == "提出物品领用申请") {
-        changeMust(null, 2);
+function rowChangeEvent(obj, sign) {
+    if (sign != '1') {
+        trCObj0 = $("[name='userAimTable']").find("tbody").find("tr").eq(0);
+        c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index();
+        c1 = trCObj0.find("td[data-label='商品名称']").index();
+        c2 = trCObj0.find("td[data-label='资产名称']").index();
+        c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index();
+        c4 = trCObj0.find("td[data-label='数量(基本单位)']").index();
+        c5 = trCObj0.find("td[data-label='用途']").index();
+        c6 = trCObj0.find("td[data-label='总价']").index();
+        c7 = trCObj0.find("td[data-label='成本中心代码']").index();
+        c8 = trCObj0.find("td[data-label='成本中心名称']").index();
+        c9 = trCObj0.find("td[data-label='预算控制模式']").index();
+        c10 = trCObj0.find("td[data-label='成本中心预算']").index();
+        c11 = trCObj0.find("td[data-label='卡券名称']").index();
+        c12 = trCObj0.find("td[data-label='卡券面值']").index();
+        c13 = trCObj0.find("td[data-label='领用方式']").index();
+        c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index();
+        c15 = trCObj0.find("td[data-label='收获地址']").index();
+        c16 = trCObj0.find("td[data-label='收货人']").index();
+        c17 = trCObj0.find("td[data-label='寄货人']").index();
+        c18 = trCObj0.find("td[data-label='快递单号']").index();
+        c19 = trCObj0.find("td[data-label='基本单位']").index();
+        c20 = trCObj0.find("td[data-label='收货人电话']").index();
+        c21 = trCObj0.find("td[data-label='实际出库数量']").index();
+        if (common.isMobile()) {
+            c0 = trCObj0.find("td[data-label='商品编码'][class!='no_data']").index() - 2;
+            c1 = trCObj0.find("td[data-label='商品名称']").index() - 2;
+            c2 = trCObj0.find("td[data-label='资产名称']").index() - 2;
+            c3 = trCObj0.find("td[data-label='成本价(基本单位)']").index() - 2;
+            c4 = trCObj0.find("td[data-label='数量(基本单位)']").index() - 2;
+            c5 = trCObj0.find("td[data-label='用途']").index() - 2;
+            c6 = trCObj0.find("td[data-label='总价']").index() - 2;
+            c7 = trCObj0.find("td[data-label='成本中心代码']").index() - 2;
+            c8 = trCObj0.find("td[data-label='成本中心名称']").index() - 2;
+            c9 = trCObj0.find("td[data-label='预算控制模式']").index() - 2;
+            c10 = trCObj0.find("td[data-label='成本中心预算']").index() - 2;
+            c11 = trCObj0.find("td[data-label='卡券名称']").index() - 2;
+            c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
+            c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
+            c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
+            c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+            c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
+            c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
+            c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
+            c19 = trCObj0.find("td[data-label='基本单位']").index() - 2;
+            c20 = trCObj0.find("td[data-label='收货人电话']").index() - 2;
+            c21 = trCObj0.find("td[data-label='实际出库数量']").index() - 2;
+        }
+        var activityName = $("#activityName").val();
+        if (activityName == "提出物品领用申请") {
+            changeMust(obj, 2);
+        }
     }
 }
 function setCostCenterByCondition1(obj) {
@@ -1512,8 +1616,11 @@ function setCostCenterByCondition1(obj) {
         $(this).find("td[data-label='成本中心代码']").not(".no_data").find("input[type='text']").val(kostl);
         $(this).find("td[data-label='成本中心代码']").not(".no_data").find("input[type='hidden']").val(departmentId);
         $(this).find("td[data-label='成本中心名称']").not(".no_data").find("input").val(costCenterName);
+        var kuaiDiType = $(this).find("td[data-label='成本中心名称']").not(".no_data").find("select").val();
+        if (kuaiDiType == "正常领用----随班车或物流") {
+            $("[name='isKuaiDi']").val("no");
+        }
     });
-
 }
 //获取项目对应成本中心预算
 function getItemBudget() {
@@ -1621,9 +1728,9 @@ function getBudget1() {
                             if (costCenterNo == dataArr[i].costCenter) {
                                 $("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心预算']").not(".no_data").find("input").val(dataArr[i].availableAmount);
                                 $("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='预算控制模式']").not(".no_data").find("input").val(dataArr[i].controlType);
-                                for (var j = 0; j < costCenter.length; j++) {
-                                    costCenter.remove(costCenterNo);
-                                }
+                                // for (var j = 0; j < costCenter.length; j++) {
+                                costCenter.remove(costCenterNo);
+                                // }
                             }
                         }
 
@@ -1745,4 +1852,4 @@ function fileUploadChangeEvent() {
     changeMust(null, 2);
     calculatedPriceForUpload();
 }
-// 	</script>
+// </script>
