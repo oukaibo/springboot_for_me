@@ -116,6 +116,8 @@ $(function() {
     var activityName = $("#activityName").val();
     var pageType = $("#pageType").val();
     if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
+        // 发起人起草时隐藏导出按钮
+        $("[name='userAimTable_export_btn']").hide();
         $("[name='isLiveBroadcast']").val("no");
         $("[name='costCenterChoose']").removeAttr("readonly");
         $("[name='costCenterChoose']").removeAttr("disabled");
@@ -424,7 +426,7 @@ function addOnhCangeEvent() {
 }
 function hideImportButton() {
     var itemType = $("[name='itemType']").val();
-    var pageType = $("[name='pageType']").val();
+    var pageType = $("#pageType").val();
     var activityName = $("#activityName").val();
     if (activityName == '提出物品领用申请') {
         switch (itemType) {
@@ -444,8 +446,13 @@ function hideImportButton() {
     } else {
         $("[name='userAimTable']").find("tfoot").eq(0).find("button").hide();
     }
-    // 显示导出按钮
-    $("[name='userAimTable_export_btn']").show();
+    if (activityName == '提出物品领用申请' && pageType == 'startProcess') {
+        $("[name='userAimTable_export_btn']").hide();
+    } else {
+        // 显示导出按钮
+        $("[name='userAimTable_export_btn']").show();
+    }
+
 }
 
 common.chooseDepart = function(elementId) {
@@ -681,6 +688,7 @@ function hideOrShowTableColumn(obj) {
     // var index=text.indexOf("-")+1;
     // text=text.substring(index);
     // 库存管理员领用和出库显示实际出库数量
+    var showActualNum = ['进行出库开单', '进行快递打单'];
     if (activityName == "库存管理员领用和出库") {
         formUtil.tableFun.chooseModelShowByTableParam({
             name: 'userAimTable',
@@ -694,11 +702,20 @@ function hideOrShowTableColumn(obj) {
             name: 'userAimTable',
             colNum: c21
         });
+
     } else {
-        formUtil.tableFun.chooseModelHiddenByTableParam({
-            name: 'userAimTable',
-            colNum: c21
-        });
+        if (showActualNum.indexOf(activityName) > -1) {
+            formUtil.tableFun.chooseModelShowByTableParam({
+                name: 'userAimTable',
+                colNum: c21
+            });
+        } else {
+            formUtil.tableFun.chooseModelHiddenByTableParam({
+                name: 'userAimTable',
+                colNum: c21
+            });
+        }
+
         formUtil.tableFun.changeHiddenMustByTableParam({
             name: 'userAimTable',
             colNum: c21
@@ -1057,7 +1074,6 @@ function chooseUser(obj) {
                 var arr = result.dataList;
                 if (arr.length == 1 && (arr[0].tierDescription)) {
                     $("[name='chooseRdcUser']").val(arr[0].tierDescription);
-
                 } else {
                     layer.msg("RDC管理员配置有误,请联系管理员!");
                     $(obj).val("");
@@ -1436,6 +1452,7 @@ function getPresidentByDepartmentId() {
 function check_before_submit() {
     var activityName = $("#activityName").val();
     if (activityName == '提出物品领用申请') {
+
         getPresidentByDepartmentId();
         var isFoundationVal = $("[name='isFoundation']").val();
         // 基金会领用隐藏域字段是3月10日上线的，这次版本加了两个字段，项目编码，是否基金会领用，如果复制以前版本流程，会导致网关字段缺少，由于这个字段是必须选中基金会领用才会带出的，以前版本没有这个选项，所有这里直接赋值为no，为什么赋值为no，是因为空字符串不抽值，为什么项目编码不赋值，因为项目编码是选值组件，选值组件会抽值，即使为空也会抽值。
@@ -1452,23 +1469,31 @@ function check_before_submit() {
 
         var flag2 = judgeIsOverBudget();
         if (flag2 && flag1) {
+            // 设置库存管理员领用和出库的值，防止赋值版本时，值不同，客户又不想清空表格
+            var wareHouse = $("[name='wareHouse'] option:selected").text();
+            var roleName = "物品领用" + wareHouse;
+            var chooseRdcUser = $("[name='chooseRdcUser']").val();
+            if (roleName != chooseRdcUser) {
+                $("[name='chooseRdcUser']").val(roleName);
+            }
             return true;
         } else {
             return false;
         }
-    } else if (activityName == '库存管理员领用和出库') {
-        var flag1 = getBudget1();
-        if (!flag1) {
-            return;
-        }
+    } else // else if (activityName == '库存管理员领用和出库') {
+    // var flag1 = getBudget1();
+    // if (!flag1) {
+    //     return;
+    // }
 
-        var flag2 = judgeIsOverBudget();
-        if (flag2 && flag1) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
+    // var flag2 = judgeIsOverBudget();
+    // if (flag2 && flag1) {
+    //     return true;
+    // } else {
+    //     return false;
+    // }
+    // } else
+    {
         return true;
     }
 }
@@ -1616,7 +1641,7 @@ function setCostCenterByCondition1(obj) {
         $(this).find("td[data-label='成本中心代码']").not(".no_data").find("input[type='text']").val(kostl);
         $(this).find("td[data-label='成本中心代码']").not(".no_data").find("input[type='hidden']").val(departmentId);
         $(this).find("td[data-label='成本中心名称']").not(".no_data").find("input").val(costCenterName);
-        var kuaiDiType = $(this).find("td[data-label='成本中心名称']").not(".no_data").find("select").val();
+        var kuaiDiType = $(this).find("td[data-label='领用方式']").not(".no_data").find("select").val();
         if (kuaiDiType == "正常领用----随班车或物流") {
             $("[name='isKuaiDi']").val("no");
         }
@@ -1852,4 +1877,4 @@ function fileUploadChangeEvent() {
     changeMust(null, 2);
     calculatedPriceForUpload();
 }
-// </script>
+//  </script>
