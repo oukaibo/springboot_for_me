@@ -129,11 +129,14 @@ $(function() {
         });
         $("[name='isKuaiDi']").val("yes");
         $("[name='isPresident']").val("no");
+    } else {
+        var allTotalMoney = $("[name='allTotalMoney']").val();
+        $("[name='alreadyForzenMoney']").val(allTotalMoney);
     }
-
     //在进行出库打单环节时，显示快递单号且必填，其他环节隐藏
     deleverCodeHideOrShow();
     setTableColumnWidth();
+
     //隐藏导出按钮
     // var exportButtonArr = ["库存管理员领用和出库", "进行出库开单", "进行快递打单"];
     // if (exportButtonArr.indexOf(activityName) > -1) {
@@ -1344,8 +1347,11 @@ function judgeIsOverBudget() {
     if (itemCode) {
         return judgeIsOverItemBudget();
     }
-    var bussinessName = $("[name='bussiness_name']").val();
+    // 定义已经冻结的钱为0
+    var alreadyForzenMoney = 0;
 
+    var bussinessName = $("[name='bussiness_name']").val();
+    var activityName = $("#activityName").val();
     var sysDate = new Date();
     var flag = false;
     $("[name='userAimTable'] tbody").find("tr").each(function() {
@@ -1356,19 +1362,24 @@ function judgeIsOverBudget() {
         var costCenter = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
         var controlType = $(this).find("td[data-label='预算控制模式']").find("input").val();
         var budget = parseFloat($(this).find("td[data-label='成本中心预算']").find("input").val());
+        if (activityName == "库存管理员领用和出库") {
+            var alreadyForzenMoney2 = parseFloat($("[name='alreadyForzenMoney']").val());
+            var alreadyForzenMoney3 = isNaN(alreadyForzenMoney2)
+            alreadyForzenMoney = alreadyForzenMoney3 ? 0 : alreadyForzenMoney2;
+        }
         var isError = false;
         budget = isNaN(budget) ? 0 : budget;
         $("[name='userAimTable'] tbody").find("tr").each(function() {
             var costCenter1 = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
-            var total = parseFloat($(this).find("td[data-label='总价']").find("input").val());
-            var dontMoney = isNaN(total)
-            if (dontMoney) {
-                layer.alert("总价有误，请检查后再提交！");
-                isError = true;
-                return false;
-            }
-            total = dontMoney ? 0 : total;
             if (costCenter == costCenter1) {
+                var total = parseFloat($(this).find("td[data-label='总价']").find("input").val());
+                var dontMoney = isNaN(total)
+                if (dontMoney) {
+                    layer.alert("总价有误，请检查后再提交！");
+                    isError = true;
+                    return false;
+                }
+                total = dontMoney ? 0 : total;
                 amount += total;
             }
 
@@ -1379,15 +1390,14 @@ function judgeIsOverBudget() {
         if (controlType == '不控制') {
             flag = true;
         } else {
-
-            if (amount <= budget) {
+            var finalCanUseBudget = budget + alreadyForzenMoney;
+            if (amount <= finalCanUseBudget) {
                 flag = true;
             } else {
                 flag = false;
-                layer.alert(costCenter + "成本中心对应科目" + bussinessName + "预算金额不足,该成本中心当前期间预算为:" + budget);
+                layer.alert(costCenter + "成本中心对应科目" + bussinessName + "预算金额不足,该成本中心当前期间预算为:" + finalCanUseBudget);
                 return flag;
             }
-
         }
     });
 
@@ -1480,20 +1490,19 @@ function check_before_submit() {
         } else {
             return false;
         }
-    } else // else if (activityName == '库存管理员领用和出库') {
-    // var flag1 = getBudget1();
-    // if (!flag1) {
-    //     return;
-    // }
+    } else if (activityName == '库存管理员领用和出库') {
+        var flag1 = getBudget1();
+        if (!flag1) {
+            return;
+        }
 
-    // var flag2 = judgeIsOverBudget();
-    // if (flag2 && flag1) {
-    //     return true;
-    // } else {
-    //     return false;
-    // }
-    // } else
-    {
+        var flag2 = judgeIsOverBudget();
+        if (flag2 && flag1) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
         return true;
     }
 }
@@ -1782,8 +1791,9 @@ function getBudget1() {
         });
 
         return flag;
-    } else
+    } else {
         return true;
+    }
 }
 
 function getCostCenter(departmentId, elementId) {
@@ -1877,4 +1887,4 @@ function fileUploadChangeEvent() {
     changeMust(null, 2);
     calculatedPriceForUpload();
 }
-//  </script>
+// </script>
