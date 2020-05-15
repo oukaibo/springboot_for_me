@@ -1481,15 +1481,14 @@ function getPresidentByDepartmentId() {
 }
 
 function check_before_submit() {
+    // 设置需要进行预算操作
+    $("[name='isDoBudget']").val("true");
     var activityName = $("#activityName").val();
     var wareHourse = $("[name='wareHouse']").find("option:selected").text();
     var is1 = wareHourse == '电商成品仓' || wareHourse == '云商成品仓' || wareHourse == '科技成品仓';
-    var is2 = activityName == "库存管理员领用和出库" && !is1;
-    var is4 = activityName == "进行出库开单" && is1;
-
+    var is2 = activityName == "库存管理员领用和出库" && is1;
+    var is4 = activityName == "进行出库开单" && !is1;
     if (activityName == '提出物品领用申请') {
-        // 设置需要进行预算操作
-        $("[name='isDoBudget']").val("true");
         getPresidentByDepartmentId();
         var isFoundationVal = $("[name='isFoundation']").val();
         // 基金会领用隐藏域字段是3月10日上线的，这次版本加了两个字段，项目编码，是否基金会领用，如果复制以前版本流程，会导致网关字段缺少，由于这个字段是必须选中基金会领用才会带出的，以前版本没有这个选项，所有这里直接赋值为no，为什么赋值为no，是因为空字符串不抽值，为什么项目编码不赋值，因为项目编码是选值组件，选值组件会抽值，即使为空也会抽值。
@@ -1518,8 +1517,7 @@ function check_before_submit() {
             return false;
         }
     } else if (is2 || is4) {
-        // 设置需要进行预算操作
-        $("[name='isDoBudget']").val("true");
+        $("[name='isDoBudget']").val("false");
         var flag1 = getBudget1();
         if (!flag1) {
             return;
@@ -1532,8 +1530,6 @@ function check_before_submit() {
             return false;
         }
     } else {
-        // 设置不进行预算操作
-        $("[name='isDoBudget']").val("false");
         return true;
     }
 }
