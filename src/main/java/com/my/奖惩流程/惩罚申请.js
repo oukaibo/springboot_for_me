@@ -1,6 +1,11 @@
-// <script type='text/javascript'>
-
-$(function() {
+{/* <script type='text/javascript'>  */ }
+var taskId = $("#taskId").val();
+var needJudgeArr = ['审核奖惩申请(地区总经理)', '审核奖惩申请(运营发展副总裁)', '被奖惩人上级审批', '被奖惩人隔级审批', '奖惩最终审批'];
+//获得当前登录人
+var curUserId = $("#userId").val();
+$(function () {
+    $("[name='isNeiKongZhiSong']").val("1");
+    accordingActivityHideOpnionField();
     $("#insTitle_input").attr("disabled", "disabled");
     //内控部字段有值吗？因为curUserId在其他页面打开是获取不到的，所以我不能在每次窗体加载时获取
     var isNeiKong = $("[name='isInternalControlDepartment']").val();
@@ -36,6 +41,7 @@ $(function() {
         colNum: 8
     });
 
+
     if (activityName == "被奖惩人上级审批") {
         $("[name='select_hDNB']").val("");
 
@@ -59,27 +65,59 @@ $(function() {
 
 })
 
+function isNeiKongZhiSong(obj) {
+    var is = $(obj).val();
+    $("[name='isNeiKongZhiSong']").val(is);
+}
+
 // 是否内勤
 function judgeNeiQin(obj) {
     var val = $(obj).val();
     // 是内勤
     if (val == "0") {
-        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
-        formUtil.tableFun.changeEditByTableParam({
-            name: 'table_3pmC',
-            colNum: 1,
-        });
-    } else {
-        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").show();
         formUtil.tableFun.changeNotEditByTableParam({
             name: 'table_3pmC',
-            colNum: 1,
+            colNum: 1
         });
+        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").show();
+    } else {
+        $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
+        $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
+        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
+        queryCompanyCode();
     }
+    $('[name="table_3pmC"]').find("tbody").find("tr:gt(0)").remove();
+    $('[name="table_3pmC"]').find("tbody").find("td input").val("");
+    $('[name="table_3pmC"]').find("tbody").find("td select").val("");
 }
 //惩罚
-//获得当前登录人
-var curUserId = $("#userId").val();
+// 查询公司编码
+function queryCompanyCode() {
+    $.ajax({
+        url: common.getPath() + '/sysCompany/allCompany',
+        type: 'post',
+        dataType: 'json',
+        data: {},
+        success: function (result) {
+            var selectArr = new Array();
+            for (var i = 0; i < result.length - 1; i++) {
+                if (result[i].companyName.indexOf("Country") < 0) {
+                    selectArr.push({
+                        name: result[i].companyCode,
+                        value: result[i].companyCode
+                    });
+                }
+            }
+            //             初始化公司代码
+            layui.formSelects.data('theCompany', 'local', {
+                arr: selectArr
+            });
+
+            common.initMultiSelect();
+            $("[name='theCompany']").attr("onchange", "companyCodeOnchange('theCompany');");
+        }
+    })
+}
 //流程主题命名
 function insTitleName() {
     var date = getNowFormatDate();
@@ -129,7 +167,7 @@ function getSysRoleAndSet() {
         url: common.getPath() + '/sysUser/searchByRole?roleUid=' + roleUid,
         type: 'get',
         contentType: "application/json;charset=utf-8",
-        success: function(result) {
+        success: function (result) {
             if (result.status == 0) {
                 for (var i = 0; i < result.data.length; i++) {
                     var userUid = result.data[i].userUid;
@@ -148,7 +186,7 @@ function getSysRoleAndSet() {
                 common.initSelect();
             }
         },
-        error: function(result) {}
+        error: function (result) { }
     });
 }
 
@@ -166,59 +204,66 @@ var theUserUids = [];
 function isDepartManagerOrL5() {
     var isFiveL5 = $("[name='isL5Level']").val();
     var activityName = $("#activityName").val();
-    if (curUserId != "" && curUserId != null && curUserId != undefined) {
-        $.ajax({
-            url: common.getPath() + '/selectUser/getDepartmentPrincipalByUserId?userId=' + curUserId,
-            type: 'get',
-            contentType: "application/json;charset=utf-8",
-            success: function(result) {
-                if (result.status == 0) {
-                    for (var i = 0; i < result.data.users.length; i++) {
-                        var userUid = result.data.users[i].userUid;
-                        theUserUids.push(userUid);
-                    }
-                    if (activityName == "奖惩申报人提报流程") {
-                        //只有第一个环节需要判断是不是部门负责人
-                        if (theUserUids.indexOf(curUserId) > -1) {
-                            //当前登录人是部门负责人
-                            $("[name='isDepartmentManager']").val("yes");
-                        } else {
-                            $("[name='isDepartmentManager']").val("no");
-                        }
-                    }
 
-                    //判断当前登录人级别是否已经L5级别
-                    if (isFiveL5 == "yes" || isFiveL5 == "no") {
-                        return;
-                    }
-                    var level = result.data.user.levels;
-
-                    if (level == "L5") {
-                        $("[name='isL5Level']").val("yes");
-                    } else {
-                        $("[name='isL5Level']").val("no");
-                    }
-
-                    common.initSelect();
-                }
-            },
-            error: function(result) {}
-        });
+    if (curUserId == "00000001") {
+        $("[name='isL5Level']").val("yes");
+    } else {
+        $("[name='isL5Level']").val("no");
     }
+    // if (curUserId != "" && curUserId != null && curUserId != undefined) {
+    //     $.ajax({
+    //         url: common.getPath() + '/selectUser/getDepartmentPrincipalByUserId?userId=' + curUserId,
+    //         type: 'get',
+    //         contentType: "application/json;charset=utf-8",
+    //         success: function(result) {
+    //             if (result.status == 0) {
+    //                 for (var i = 0; i < result.data.users.length; i++) {
+    //                     var userUid = result.data.users[i].userUid;
+    //                     theUserUids.push(userUid);
+    //                 }
+    //                 if (activityName == "奖惩申报人提报流程") {
+    //                     //只有第一个环节需要判断是不是部门负责人
+    //                     if (theUserUids.indexOf(curUserId) > -1) {
+    //                         //当前登录人是部门负责人
+    //                         $("[name='isDepartmentManager']").val("yes");
+    //                     } else {
+    //                         $("[name='isDepartmentManager']").val("no");
+    //                     }
+    //                 }
+
+    //                 //判断当前登录人级别是否已经L5级别
+    //                 if (isFiveL5 == "yes" || isFiveL5 == "no") {
+    //                     return;
+    //                 }
+    //                 var level = result.data.user.levels;
+
+    //                 if (level == "L5") {
+    //                     $("[name='isL5Level']").val("yes");
+    //                 } else {
+    //                     $("[name='isL5Level']").val("no");
+    //                 }
+
+    //                 common.initSelect();
+    //             }
+    //         },
+    //         error: function(result) {}
+    //     });
+    // }
 
 }
 
 function accordingNeiQinGiveVal(obj) {
     var judgeNeiQin = $("[name='judgeNeiQin']").val();
-    if ("0" == judgeNeiQin) {
+    if ("1" == judgeNeiQin) {
         var userCode = $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=text]').val();
         $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val(userCode);
+
     }
 }
 function punishUserOnchange(obj) {
     var userCode = $(obj).parent().parent().find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
     var codes = [];
-    if (userCode != undefined && userCode != "") {
+    if (userCode) {
         codes.push(userCode);
     }
     $.ajax({
@@ -227,7 +272,7 @@ function punishUserOnchange(obj) {
         dataType: 'json',
         data: JSON.stringify(codes),
         contentType: "application/json;charset=utf-8",
-        success: function(result) {
+        success: function (result) {
             if (result.status == 0) {
                 if (result.data.length > 0) {
                     for (var i = 0; i < result.data.length; i++) {
@@ -261,17 +306,298 @@ function punishUserOnchange(obj) {
                 }
             }
         },
-        error: function(result) {}
+        error: function (result) { }
     });
+}
+function accordingActivityHideOpnionField() {
+    var activityName = $("#activityName").val();
+    $("[name='select_hDNB']").val("");
+    // 上级
+    if (needJudgeArr.indexOf(activityName) > -1) {
+        formUtil.changeShowByName('select_hDNB');
+        formUtil.changeShowMustByName("select_hDNB");
+        formUtil.changeEditByName("select_hDNB");
+    } else {
+        formUtil.changeHiddenByName('select_hDNB');
+        formUtil.changeHiddenMustByName("select_hDNB");
+        formUtil.changeNotEditByName("select_hDNB");
+    }
+    layui.form.render("select");
+}
+function accordingActivityHideOpnionField2() {
+    var activityName = $("#activityName").val();
+    switch (activityName) {
+        case '审核奖惩申请(地区总经理)':
+            // 上级
+            formUtil.changeHiddenByName('select_hDNB');
+            formUtil.changeHiddenMustByName("select_hDNB");
+            // 隔级
+            formUtil.changeHiddenByName('select_7sPn');
+            formUtil.changeHiddenMustByName("select_7sPn");
+            // 地区总裁
+            formUtil.changeHiddenByName('select_zC46');
+            formUtil.changeHiddenMustByName("select_zC46");
+            // 地区总经理
+            formUtil.changeShowByName('select_n5rN');
+            formUtil.changeShowMustByName("select_n5rN");
+            break;
+        case '审核奖惩申请(运营发展副总裁)':
+            // 上级
+            formUtil.changeHiddenByName('select_hDNB');
+            formUtil.changeHiddenMustByName("select_hDNB");
+            // 隔级
+            formUtil.changeHiddenByName('select_7sPn');
+            formUtil.changeHiddenMustByName("select_7sPn");
+            // 地区总裁
+            formUtil.changeShowByName('select_zC46');
+            formUtil.changeShowMustByName("select_zC46");
+            // 地区总经理
+            formUtil.changeShowByName('select_n5rN');
+            formUtil.changeShowMustByName("select_n5rN");
+            break;
+        case '被奖惩人上级审批':
+            // 上级
+            formUtil.changeShowByName('select_hDNB');
+            formUtil.changeShowMustByName("select_hDNB");
+            // 隔级
+            formUtil.changeHiddenByName('select_7sPn');
+            formUtil.changeHiddenMustByName("select_hDNB");
+            // 地区总裁
+            formUtil.changeHiddenByName('select_zC46');
+            formUtil.changeHiddenMustByName("select_hDNB");
+            // 地区总经理
+            formUtil.changeHiddenByName('select_n5rN');
+            formUtil.changeHiddenMustByName("select_hDNB");
+            break;
+        case '被奖惩人隔级审批':
+            // 上级
+            formUtil.changeShowByName('select_hDNB');
+            formUtil.changeShowMustByName("select_hDNB");
+            // 隔级
+            formUtil.changeShowByName('select_7sPn');
+            formUtil.changeShowMustByName("select_7sPn");
+            // 地区总裁
+            formUtil.changeHiddenByName('select_zC46');
+            formUtil.changeHiddenMustByName("select_zC46");
+            // 地区总经理
+            formUtil.changeHiddenByName('select_n5rN');
+            formUtil.changeHiddenMustByName("select_n5rN");
+            break;
+        case '奖惩最终审批':
+            var judgeNeiQin = $("[name='judgeNeiQin']").val();
+            if (judgeNeiQin == '0') {
+                // 上级
+                formUtil.changeHiddenByName('select_hDNB');
+                formUtil.changeHiddenMustByName("select_hDNB");
+                // 隔级
+                formUtil.changeHiddenByName('select_7sPn');
+                formUtil.changeHiddenMustByName("select_7sPn");
+                // 地区总裁
+                formUtil.changeShowByName('select_zC46');
+                formUtil.changeShowMustByName("select_zC46");
+                // 地区总经理
+                formUtil.changeShowByName('select_n5rN');
+                formUtil.changeShowMustByName("select_n5rN");
+            } else {
+                // 上级
+                formUtil.changeShowByName('select_hDNB');
+                formUtil.changeShowMustByName("select_hDNB");
+                // 隔级
+                formUtil.changeShowByName('select_7sPn');
+                formUtil.changeShowMustByName("select_7sPn");
+                // 地区总裁
+                formUtil.changeHiddenByName('select_zC46');
+                formUtil.changeHiddenMustByName("select_zC46");
+                // 地区总经理
+                formUtil.changeHiddenByName('select_n5rN');
+                formUtil.changeHiddenMustByName("select_n5rN");
+            }
+            break;
+        default:
+            // 上级
+            formUtil.changeHiddenByName('select_hDNB');
+            formUtil.changeHiddenMustByName("select_hDNB");
+            // 隔级
+            formUtil.changeHiddenByName('select_7sPn');
+            formUtil.changeHiddenMustByName("select_7sPn");
+            // 地区总裁
+            formUtil.changeHiddenByName('select_zC46');
+            formUtil.changeHiddenMustByName("select_zC46");
+            // 地区总经理
+            formUtil.changeHiddenByName('select_n5rN');
+            formUtil.changeHiddenMustByName("select_n5rN");
+            break;
+    }
+}
+
+function setOpnionByActivity() {
+    var nameField = "select_hDNB";
+    var activityName = $("#activityName").val();
+    if (nameField && needJudgeArr.indexOf(activityName) > -1) {
+        $.ajax({
+            url: common.getPath() + '/activityOpinion/judgeOpinion?taskId=' + taskId + '&nameField=' + nameField,
+            type: 'GET',
+            async: false,
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result.status == 0) {
+                    var data = result.data;
+                    console.log(data);
+                    if (data.opinion) {
+                        if (data.opinion == "yes") {
+                            $("[name='" + nameField + "']").val("1");
+                        }
+                    }
+                }
+            }
+        })
+    }
+}
+function setOpnionByActivity2() {
+    var nameField = "";
+    var activityName = $("#activityName").val();
+    switch (activityName) {
+        case '审核奖惩申请(地区总经理)':
+            nameField = "select_n5rN"
+            break;
+        case '审核奖惩申请(运营发展副总裁)':
+            nameField = "select_zC46"
+            break;
+        case '被奖惩人上级审批':
+            nameField = "select_hDNB"
+            break;
+        case '被奖惩人隔级审批':
+            nameField = "select_7sPn"
+            break;
+        default:
+            break;
+    }
+    if (nameField) {
+        $.ajax({
+            url: common.getPath() + '/activityOpinion/judgeOpinion?taskId=' + taskId + '&nameField=' + nameField,
+            type: 'GET',
+            async: false,
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result.status == 0) {
+                    var data = result.data;
+                    console.log(data);
+                    if (data.opinion) {
+                        if (data.opinion == "yes") {
+                            $("[name='" + nameField + "']").val("1");
+                        }
+                    }
+
+                }
+            }
+        })
+    }
+
+}
+
+function setLeadersAndL5() {
+    var zUserUidsStr = "";
+    var leaderCodes = [];
+    var gUserUidsStr = "";
+    var leaderCodes = [];
+    var gLeaderCodes = [];
+    var activityName = $("#activityName").val();
+    var copyUser = "";
+    if (activityName == "奖惩申报人提报流程") {
+        var userPunish = $("[name='table_3pmC']").find("tbody").find("tr");
+        var companyCodeHaHaHa = "";
+        for (var i = 0; i < userPunish.length; i++) {
+            var punishUserCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
+            var shangJiUserCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='上级员工号']").not(".no_data").find('input').val();
+            var geJiUserCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='隔级员工号']").not(".no_data").find('input').val();
+            var companyCodeHaHa = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='公司编码']").not(".no_data").find('input').val();
+            if (punishUserCode != "") {
+                copyUser += punishUserCode + ";";
+            }
+            if (shangJiUserCode != "") {
+                zUserUidsStr += shangJiUserCode + ";";
+                leaderCodes.push(shangJiUserCode);
+            }
+            if (geJiUserCode != "") {
+                gUserUidsStr += geJiUserCode + ";";
+                gLeaderCodes.push(geJiUserCode);
+            }
+            if (companyCodeHaHa != "") {
+                companyCodeHaHaHa += companyCodeHaHa + ";";
+            }
+        }
+        if (companyCodeHaHaHa) {
+            $("[name='companyNum']").val(companyCodeHaHaHa);
+        }
+        $("[name='zLeaders']").val(zUserUidsStr);
+
+        if (zUserUidsStr) {
+            $.ajax({
+                url: 'selectUser/getLeadersLevels',
+                type: 'post',
+                dataType: 'json',
+                data: JSON.stringify(leaderCodes),
+                contentType: "application/json;charset=utf-8",
+                success: function (result) {
+                    if (result.status == 0) {
+                        var data = result.data;
+                        console.log(data);
+                        if (data.length == 0) {
+                            layer.alert("无法确认被奖惩人上级的职级", {
+                                icon: 5,
+                                title: "提示"
+                            });
+                        } else {
+                            if (result.data.indexOf("L5") > -1) {
+                                //说明上级审批人存在L5级别
+                                $("[name='zLeaderIsL5']").val("yes");
+                            } else {
+                                $("[name='zLeaderIsL5']").val("no");
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        $("[name='gLeaders']").val(gUserUidsStr);
+        if (gUserUidsStr) {
+            $.ajax({
+                url: 'selectUser/getLeadersLevels',
+                type: 'post',
+                dataType: 'json',
+                data: JSON.stringify(gLeaderCodes),
+                contentType: "application/json;charset=utf-8",
+                success: function (result) {
+                    if (result.status == 0) {
+                        var data = result.data;
+                        console.log(data);
+                        if (data.length == 0) {
+                            layer.alert("无法确认被奖惩人隔级的职级", {
+                                icon: 5,
+                                title: "提示"
+                            });
+                        } else {
+                            if (result.data.indexOf("L5") > -1) {
+                                //说明上级审批人存在L5级别
+                                $("[name='gLeaderIsL5']").val("yes");
+                            } else {
+                                $("[name='gLeaderIsL5']").val("no");
+                            }
+                        }
+                    }
+                }
+            })
+        }
+        $("[name='copyToByUserId']").val(copyUser);
+    }
 }
 
 function check_before_submit() {
-    var zUserUidsStr = "";
     var activityName = $("#activityName").val();
     //代办
     var pageType = $("#pageType").val();
     if (pageType != "finishedDetail") {
-        var taskId = $("#taskId").val();
         var isZhiSong = $("[name='select_DSnM']").val();
         if (isZhiSong == "0") {
             //当前涉及L4以上舞弊事件
@@ -280,162 +606,22 @@ function check_before_submit() {
             //当前不涉及L4以上舞弊事件
             $("[name='isZhiSong']").val("no");
         }
-        var leaderCodes = [];
-        if (activityName == "被奖惩人上级审批") {
-
-            $.ajax({
-                url: common.getPath() + '/activityOpinion/judgeOpinion?taskId=' + taskId,
-                type: 'GET',
-                async: false,
-                contentType: "application/json;charset=utf-8",
-                success: function(result) {
-
-                    if (result.status == 0) {
-                        var data = result.data;
-                        console.log(data);
-                        if (data.isShangJi != undefined && data.isShangJi != "") {
-                            if (data.isShangJi == "yes") {
-                                $("[name='select_hDNB']").val("1");
-                            }
-                        }
-
-                    }
-                }
-            })
-        }
-        if (activityName == "奖惩最终审批") {
-
-            $.ajax({
-                url: common.getPath() + '/activityOpinion/judgeOpinion?taskId=' + taskId,
-                type: 'get',
-                async: false,
-                contentType: "application/json;charset=utf-8",
-                success: function(result) {
-                    if (result.status == 0) {
-                        var data = result.data;
-                        console.log(data);
-                        if (data.isZuiZhong != undefined && data.isZuiZhong != "") {
-                            if (data.isZuiZhong == "yes") {
-                                $("[name='select_7sPn']").val("1");
-                            }
-                        }
-
-                    }
-                }
-            })
-        }
-        var gUserUidsStr = "";
-        var leaderCodes = [];
-        var gLeaderCodes = [];
-        if (activityName == "奖惩申报人提报流程") {
-            var userPunish = $("[name='table_3pmC']").find("tbody").find("tr");
-
-            var copyUser = "";
-            var companyCodeHaHaHa = "";
-            for (var i = 0; i < userPunish.length; i++) {
-                var punishUserCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
-                var shangJiUserCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='上级员工号']").not(".no_data").find('input').val();
-                var geJiUserCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='隔级员工号']").not(".no_data").find('input').val();
-                var companyCodeHaHa = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='公司编码']").not(".no_data").find('input').val();
-                if (punishUserCode != "") {
-                    copyUser += punishUserCode + ";";
-                }
-                if (shangJiUserCode != "") {
-                    zUserUidsStr += shangJiUserCode + ";";
-                    leaderCodes.push(shangJiUserCode);
-                }
-                if (geJiUserCode != "") {
-                    gUserUidsStr += geJiUserCode + ";";
-                    gLeaderCodes.push(geJiUserCode);
-                }
-                if (companyCodeHaHa != "") {
-                    companyCodeHaHaHa += companyCodeHaHa + ";";
-                }
-            }
-            if (companyCodeHaHaHa != "") {
-                $("[name='companyNum']").val(companyCodeHaHaHa);
-            }
-            $("[name='zLeaders']").val(zUserUidsStr);
-            if (zUserUidsStr != "" && zUserUidsStr != undefined) {
-                $.ajax({
-                    url: 'selectUser/getLeadersLevels',
-                    type: 'post',
-                    dataType: 'json',
-                    data: JSON.stringify(leaderCodes),
-                    contentType: "application/json;charset=utf-8",
-                    success: function(result) {
-
-                        if (result.status == 0) {
-                            var data = result.data;
-                            console.log(data);
-                            if (data.length == 0) {
-                                layer.alert("无法确认被奖惩人上级的职级", {
-                                    icon: 5,
-                                    title: "提示"
-                                });
-
-                            } else {
-                                if (result.data.indexOf("L5") > -1) {
-                                    //说明上级审批人存在L5级别
-                                    $("[name='zLeaderIsL5']").val("yes");
-
-                                } else {
-                                    $("[name='zLeaderIsL5']").val("no");
-                                }
-                            }
-                        }
-                    }
-                })
-            }
-
-            $("[name='gLeaders']").val(gUserUidsStr);
-            if (gUserUidsStr != "" && gUserUidsStr != undefined) {
-                $.ajax({
-                    url: 'selectUser/getLeadersLevels',
-                    type: 'post',
-                    dataType: 'json',
-                    data: JSON.stringify(gLeaderCodes),
-                    contentType: "application/json;charset=utf-8",
-                    success: function(result) {
-
-                        if (result.status == 0) {
-                            var data = result.data;
-                            console.log(data);
-                            if (data.length == 0) {
-                                layer.alert("无法确认被奖惩人隔级的职级", {
-                                    icon: 5,
-                                    title: "提示"
-                                });
-
-                            } else {
-                                if (result.data.indexOf("L5") > -1) {
-                                    //说明上级审批人存在L5级别
-                                    $("[name='gLeaderIsL5']").val("yes");
-
-                                } else {
-                                    $("[name='gLeaderIsL5']").val("no");
-                                }
-                            }
-                        }
-                    }
-                })
-            }
-            getGgLeaders();
-            $("[name='copyToByUserId']").val(copyUser);
-        }
+        setOpnionByActivity();
+        setLeadersAndL5();
+        getGgLeaders();
     }
     return true;
-
 }
+// 获得直级领导
 function getGgLeaders() {
     var zzLeadersStr = $("[name='zzLeaders']").val();
-    if (zzLeadersStr = "" || zzLeadersStr == undefined) {
+    if (!zzLeadersStr) {
 
         // if (activityName = "被奖惩人隔级审批") {
         var gLeadersCodes = $("[name='gLeaders']").val();
         var zzLeadersStr = "";
 
-        if (gLeadersCodes != "" && gLeadersCodes != undefined) {
+        if (gLeadersCodes) {
             var str = gLeadersCodes.substring(0, gLeadersCodes.length - 1);
             var codes = str.split(";");
 
@@ -446,32 +632,29 @@ function getGgLeaders() {
                 data: JSON.stringify(codes),
                 async: false,
                 contentType: "application/json;charset=utf-8",
-                success: function(result) {
+                success: function (result) {
                     if (result.status == 0) {
                         if (result.data.length > 0) {
                             for (var i = 0; i < result.data.length; i++) {
-                                if (result.data[i].zUserUid == "" && result.data[i].curUserInfo.managernumber == "00000001") {
-                                    zzLeadersStr += result.data[i].curUserInfo.managernumber + ";";
+                                var leaders = result.data[i];
+                                if (leaders.zUserUid == "" && leaders.curUserInfo.managernumber == "00000001") {
+                                    zzLeadersStr += leaders.curUserInfo.managernumber + ";";
                                 } else {
-                                    zzLeadersStr += result.data[i].zUserUid + ";";
+                                    zzLeadersStr += leaders.zUserUid + ";";
                                 }
-
                             }
                         }
                     }
-                    if (zzLeadersStr != "" && zzLeadersStr != undefined) {
+                    if (zzLeadersStr) {
                         $("[name='zzLeadersStr']").val(zzLeadersStr);
-
                     } else {
                         $("[name='zzLeadersStr']").val("");
                     }
                 },
-                error: function(result) {}
+                error: function (result) { }
             });
 
         }
-
-        // }
     }
 }
 function rowChangeEvent(obj) {
@@ -485,7 +668,7 @@ function rowChangeEvent(obj) {
 function addOnchangeForGetLeader() {
     var userPunish = $("[name='table_3pmC']").find("tbody").find("tr");
     for (var i = 0; i < userPunish.length; i++) {
-        var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find("input[type=text]").attr("onchange", "punishUserOnchange(this);");
+        var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='处罚人员']").not(".no_data").find("input[type=text]").attr("onchange", "accordingNeiQinGiveVal(this);punishUserOnchange(this);");
         var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='经济处分-罚款']").not(".no_data").find("input").attr("onchange", "totalMoney(this)");
         var userCode = $("[name='table_3pmC']").find("tbody").find("tr").eq(i).find("td[data-label='经济处分-赔款']").not(".no_data").find("input").attr("onchange", "totalMoney(this)");
 
@@ -542,7 +725,7 @@ function fileUploadChangeEvent() {
         }
     }
 }
-function copyUsers() {}
+function copyUsers() { }
 
 function judgeLength(obj) {
     var val = $(obj).val();
