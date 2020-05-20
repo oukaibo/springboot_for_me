@@ -1,4 +1,5 @@
-{/* <script type='text/javascript'> */ }
+{/* <script type='text/javascript'> */
+}
 var taskId = $("#taskId").val();
 $(function () {
     var activityName = $("#activityName").val();
@@ -24,8 +25,8 @@ $(function () {
         name: 'table_WZJ6',
         colNum: 9
     });
-
-
+    queryCompanyCode();
+    judgeNeiQin();
 })
 function accordingActivityHideOpnionField() {
     $("[name='select_ypGF']").val("");
@@ -69,7 +70,7 @@ function queryCompanyCode() {
 }
 // 是否内勤
 function judgeNeiQin(obj) {
-    var val = $(obj).val();
+    var val = $("[name='judgeNeiQin']").val();
     // 是内勤
     if (val == "0") {
         formUtil.tableFun.changeNotEditByTableParam({
@@ -77,11 +78,26 @@ function judgeNeiQin(obj) {
             colNum: 1,
         });
         $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='获奖人员工号']").find("i").show();
+        // 是内勤就隐藏所属公司代码
+        formUtil.changeHiddenByName("theCompany");
+        // 隐藏必填公司代码
+        formUtil.changeHiddenMustByName("theCompany");
+        formUtil.changeNotEditByName("theCompany");
     } else {
         $("[name='table_WZJ6'] tbody").find("tr").find("td[data-label='获奖人员工号']").find("input[type='text']").removeAttr("readonly");
         $("[name='table_WZJ6'] tbody").find("tr").find("td[data-label='获奖人员工号']").find("input[type='text']").removeAttr("disabled");
         $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='获奖人员工号']").find("i").hide();
-        queryCompanyCode();
+        // 是内勤就显示所属公司代码
+        formUtil.changeShowByName("theCompany");
+        // 显示必填公司代码
+        formUtil.changeShowMustByName("theCompany");
+        formUtil.changeEditByName("theCompany");
+    }
+    var activityName = $("#activityName").val();
+    if (activityName == '奖惩申报人提报流程') {
+        $('[name="table_WZJ6"]').find("tbody").find("tr:gt(0)").remove();
+        $('[name="table_WZJ6"]').find("tbody").find("td input").val("");
+        $('[name="table_WZJ6"]').find("tbody").find("td select").val("");
     }
 }
 function setOpnionByActivity() {

@@ -1,4 +1,5 @@
-{/* <script type='text/javascript'> */ }
+{/* <script type='text/javascript'> */
+}
 
 //获得当前登录人
 var taskId = $("#taskId").val();
@@ -82,6 +83,8 @@ $(function () {
     // 'table_3pmC_7': '500px'
     // }]
     // });
+    queryCompanyCode();
+    judgeNeiQin();
     layui.form.render();
 })
 
@@ -236,7 +239,7 @@ function accordingNeiQinGiveVal(obj) {
 // 是否内勤
 
 function judgeNeiQin(obj) {
-    var val = $(obj).val();
+    var val = $("[name='judgeNeiQin']").val();
     // 是内勤
     if (val == "0") {
         formUtil.tableFun.changeNotEditByTableParam({
@@ -244,14 +247,27 @@ function judgeNeiQin(obj) {
             colNum: 1,
         });
         $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='获奖人员工号']").find("i").show();
+        // 是内勤就隐藏所属公司代码
+        formUtil.changeHiddenByName("theCompany");
+        // 隐藏必填公司代码
+        formUtil.changeHiddenMustByName("theCompany");
+        formUtil.changeNotEditByName("theCompany");
     } else {
-
         $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='获奖人员工号']").find("input[type='text']").removeAttr("readonly");
         $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='获奖人员工号']").find("input[type='text']").removeAttr("disabled");
         $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='获奖人员工号']").find("i").hide();
 
-        queryCompanyCode();
-
+        // 不是内勤就显示所属公司代码
+        formUtil.changeShowByName("theCompany");
+        // 显示必填公司代码
+        formUtil.changeShowMustByName("theCompany");
+        formUtil.changeEditByName("theCompany");
+    }
+    var activityName = $("#activityName").val();
+    if (activityName == '奖惩申报人提报流程') {
+        $('[name="table_3pmC"]').find("tbody").find("tr:gt(0)").remove();
+        $('[name="table_3pmC"]').find("tbody").find("td input").val("");
+        $('[name="table_3pmC"]').find("tbody").find("td select").val("");
     }
 }
 var theUserUids = [];
@@ -650,10 +666,19 @@ function judgeLength(obj) {
 function isTeam(obj) {
     var team = $(obj).val();
     if (team == "1") {
-        formUtil.tableFun.changeEditByTableParam({ name: 'table_3pmC', colNum: 1 });
+        formUtil.tableFun.changeEditByTableParam({
+            name: 'table_3pmC',
+            colNum: 1
+        });
     } else {
-        formUtil.tableFun.changeNotEditByTableParam({ name: 'table_3pmC', colNum: 1 });
-        formUtil.tableFun.clearTargetObjValueByParam({ name: 'table_3pmC', colNum: 1 });
+        formUtil.tableFun.changeNotEditByTableParam({
+            name: 'table_3pmC',
+            colNum: 1
+        });
+        formUtil.tableFun.clearTargetObjValueByParam({
+            name: 'table_3pmC',
+            colNum: 1
+        });
     }
 }
 

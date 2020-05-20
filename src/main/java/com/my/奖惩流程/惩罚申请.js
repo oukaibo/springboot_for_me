@@ -1,4 +1,5 @@
-{/* <script type='text/javascript'>  */ }
+{/* <script type='text/javascript'>  */
+}
 var taskId = $("#taskId").val();
 var needJudgeArr = ['审核奖惩申请(地区总经理)', '审核奖惩申请(运营发展副总裁)', '被奖惩人上级审批', '被奖惩人隔级审批', '奖惩最终审批'];
 //获得当前登录人
@@ -61,6 +62,9 @@ $(function () {
             "table_3pmC": "2500px"
         }
     });
+    // 加载公司代码
+    queryCompanyCode();
+    judgeNeiQin();
     layui.form.render();
 
 })
@@ -72,7 +76,8 @@ function isNeiKongZhiSong(obj) {
 
 // 是否内勤
 function judgeNeiQin(obj) {
-    var val = $(obj).val();
+
+    var val = $("[name='judgeNeiQin']").val();
     // 是内勤
     if (val == "0") {
         formUtil.tableFun.changeNotEditByTableParam({
@@ -80,19 +85,86 @@ function judgeNeiQin(obj) {
             colNum: 1
         });
         $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").show();
+        // 是内勤就隐藏所属公司代码
+        formUtil.changeHiddenByName("theCompany");
+        // 隐藏必填公司代码
+        formUtil.changeHiddenMustByName("theCompany");
+        formUtil.changeNotEditByName("theCompany");
     } else {
         $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
         $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
         $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
-        queryCompanyCode();
+
+        // 是内勤就显示所属公司代码
+        formUtil.changeShowByName("theCompany");
+        // 显示必填公司代码
+        formUtil.changeShowMustByName("theCompany");
+        formUtil.changeEditByName("theCompany");
     }
-    $('[name="table_3pmC"]').find("tbody").find("tr:gt(0)").remove();
-    $('[name="table_3pmC"]').find("tbody").find("td input").val("");
-    $('[name="table_3pmC"]').find("tbody").find("td select").val("");
+    var activityName = $("#activityName").val();
+    if (activityName == '奖惩申报人提报流程') {
+        $('[name="table_3pmC"]').find("tbody").find("tr:gt(0)").remove();
+        $('[name="table_3pmC"]').find("tbody").find("td input").val("");
+        $('[name="table_3pmC"]').find("tbody").find("td select").val("");
+    }
+
 }
 //惩罚
+
+// 省份初始化
+function initProvAndCity() {
+
+    $.each(cityJson, function(i, val) {
+        if (val.item_code.substr(2, 4) == '0000') {
+        }
+    });
+
+}
+
+function StringBuffer(str) {
+    var arr = [];
+    str = str || "";
+    var size = 0;
+    // 存放数组大小
+    arr.push(str);
+    // 追加字符串
+    this.append = function(str1) {
+        arr.push(str1);
+        return this;
+    }
+    ;
+    // 返回字符串
+    this.toString = function() {
+        return arr.join("");
+    }
+    ;
+    // 清空
+    this.clear = function(key) {
+        size = 0;
+        arr = [];
+    }
+    ;
+    // 返回数组大小
+    this.size = function() {
+        return size;
+    }
+    ;
+    // 返回数组
+    this.toArray = function() {
+        return buffer;
+    }
+    ;
+    // 倒序返回字符串
+    this.doReverse = function() {
+        var str = buffer.join('');
+        str = str.split('');
+        return str.reverse().join('');
+    }
+    ;
+}
 // 查询公司编码
 function queryCompanyCode() {
+    var sb = new StringBuffer();
     $.ajax({
         url: common.getPath() + '/sysCompany/allCompany',
         type: 'post',
@@ -106,15 +178,12 @@ function queryCompanyCode() {
                         name: result[i].companyCode,
                         value: result[i].companyCode
                     });
+                    sb.append("<option value='" + result[i].companyCode + "'>" + result[i].companyCode + "</option>");
                 }
             }
             //             初始化公司代码
-            layui.formSelects.data('theCompany', 'local', {
-                arr: selectArr
-            });
-
-            common.initMultiSelect();
-            $("[name='theCompany']").attr("onchange", "companyCodeOnchange('theCompany');");
+            $("#theCompany").find("option[value='selectOption']").after(sb.toString());
+            common.initSelect();
         }
     })
 }
@@ -186,7 +255,7 @@ function getSysRoleAndSet() {
                 common.initSelect();
             }
         },
-        error: function (result) { }
+        error: function(result) {}
     });
 }
 
@@ -725,7 +794,7 @@ function fileUploadChangeEvent() {
         }
     }
 }
-function copyUsers() { }
+function copyUsers() {}
 
 function judgeLength(obj) {
     var val = $(obj).val();

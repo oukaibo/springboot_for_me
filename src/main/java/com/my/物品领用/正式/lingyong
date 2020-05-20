@@ -1377,6 +1377,7 @@ function judgeIsOverBudget() {
     var flag = false;
     $("[name='userAimTable'] tbody").find("tr").each(function() {
         if (bussinessName == "固定资产") {
+            $("[name='isDoBudget']").val("false");
             $(this).find("td[data-label='预算控制模式']").find("input").val("不控制");
         }
         var amount = 0;
