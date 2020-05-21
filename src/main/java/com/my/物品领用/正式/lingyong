@@ -1489,6 +1489,8 @@ function check_before_submit() {
     var is1 = wareHourse == '电商成品仓' || wareHourse == '云商成品仓' || wareHourse == '科技成品仓';
     var is2 = activityName == "库存管理员领用和出库" && is1;
     var is4 = activityName == "进行出库开单" && !is1;
+    var is5 = activityName == "库存管理员领用和出库" && !is1;
+    var is6 = activityName == "进行出库开单" && is1;
     if (activityName == '提出物品领用申请') {
         getPresidentByDepartmentId();
         var isFoundationVal = $("[name='isFoundation']").val();
@@ -1519,6 +1521,9 @@ function check_before_submit() {
         }
     } else if (is2 || is4) {
         $("[name='isDoBudget']").val("false");
+        return true;
+    } else if (is5 || is6) {
+        $("[name='isDoBudget']").val("true");
         var flag1 = getBudget1();
         if (!flag1) {
             return;
