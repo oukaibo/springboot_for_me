@@ -4,7 +4,7 @@ var taskId = $("#taskId").val();
 var needJudgeArr = ['审核奖惩申请(地区总经理)', '审核奖惩申请(运营发展副总裁)', '被奖惩人上级审批', '被奖惩人隔级审批', '奖惩最终审批'];
 //获得当前登录人
 var curUserId = $("#userId").val();
-$(function () {
+$(function() {
     $("[name='isNeiKongZhiSong']").val("1");
     accordingActivityHideOpnionField();
     $("#insTitle_input").attr("disabled", "disabled");
@@ -42,7 +42,6 @@ $(function () {
         colNum: 8
     });
 
-
     if (activityName == "被奖惩人上级审批") {
         $("[name='select_hDNB']").val("");
 
@@ -65,6 +64,12 @@ $(function () {
     // 加载公司代码
     queryCompanyCode();
     judgeNeiQin();
+    var detailUrl = $("[name='pageDetailUrl']").val();
+    if (detailUrl) {
+        $("[name='judgeDetail']").show();
+    } else {
+        $("[name='judgeDetail']").hide();
+    }
     layui.form.render();
 
 })
@@ -101,13 +106,13 @@ function judgeNeiQin(obj) {
         formUtil.changeShowMustByName("theCompany");
         formUtil.changeEditByName("theCompany");
     }
-    var activityName = $("#activityName").val();
-    if (activityName == '奖惩申报人提报流程') {
-        $('[name="table_3pmC"]').find("tbody").find("tr:gt(0)").remove();
-        $('[name="table_3pmC"]').find("tbody").find("td input").val("");
-        $('[name="table_3pmC"]').find("tbody").find("td select").val("");
-    }
 
+}
+
+function clearTable() {
+    $('[name="table_3pmC"]').find("tbody").find("tr:gt(0)").remove();
+    $('[name="table_3pmC"]').find("tbody").find("td input").val("");
+    $('[name="table_3pmC"]').find("tbody").find("td select").val("");
 }
 //惩罚
 
@@ -115,8 +120,7 @@ function judgeNeiQin(obj) {
 function initProvAndCity() {
 
     $.each(cityJson, function(i, val) {
-        if (val.item_code.substr(2, 4) == '0000') {
-        }
+        if (val.item_code.substr(2, 4) == '0000') {}
     });
 
 }
@@ -170,7 +174,7 @@ function queryCompanyCode() {
         type: 'post',
         dataType: 'json',
         data: {},
-        success: function (result) {
+        success: function(result) {
             var selectArr = new Array();
             for (var i = 0; i < result.length - 1; i++) {
                 if (result[i].companyName.indexOf("Country") < 0) {
@@ -200,6 +204,13 @@ function insTitleName() {
         //给流程主题命名
         $("#insTitle_input").val(str);
 
+    }
+}
+
+function judgeToDetailUrl() {
+    var detailUrl = $("[name='pageDetailUrl']").val();
+    if (detailUrl) {
+        window.open(detailUrl);
     }
 }
 function getNowFormatDate() {
@@ -236,7 +247,7 @@ function getSysRoleAndSet() {
         url: common.getPath() + '/sysUser/searchByRole?roleUid=' + roleUid,
         type: 'get',
         contentType: "application/json;charset=utf-8",
-        success: function (result) {
+        success: function(result) {
             if (result.status == 0) {
                 for (var i = 0; i < result.data.length; i++) {
                     var userUid = result.data[i].userUid;
@@ -341,7 +352,7 @@ function punishUserOnchange(obj) {
         dataType: 'json',
         data: JSON.stringify(codes),
         contentType: "application/json;charset=utf-8",
-        success: function (result) {
+        success: function(result) {
             if (result.status == 0) {
                 if (result.data.length > 0) {
                     for (var i = 0; i < result.data.length; i++) {
@@ -375,7 +386,7 @@ function punishUserOnchange(obj) {
                 }
             }
         },
-        error: function (result) { }
+        error: function(result) {}
     });
 }
 function accordingActivityHideOpnionField() {
@@ -508,7 +519,7 @@ function setOpnionByActivity() {
             type: 'GET',
             async: false,
             contentType: "application/json;charset=utf-8",
-            success: function (result) {
+            success: function(result) {
                 if (result.status == 0) {
                     var data = result.data;
                     console.log(data);
@@ -547,7 +558,7 @@ function setOpnionByActivity2() {
             type: 'GET',
             async: false,
             contentType: "application/json;charset=utf-8",
-            success: function (result) {
+            success: function(result) {
                 if (result.status == 0) {
                     var data = result.data;
                     console.log(data);
@@ -607,7 +618,7 @@ function setLeadersAndL5() {
                 dataType: 'json',
                 data: JSON.stringify(leaderCodes),
                 contentType: "application/json;charset=utf-8",
-                success: function (result) {
+                success: function(result) {
                     if (result.status == 0) {
                         var data = result.data;
                         console.log(data);
@@ -637,7 +648,7 @@ function setLeadersAndL5() {
                 dataType: 'json',
                 data: JSON.stringify(gLeaderCodes),
                 contentType: "application/json;charset=utf-8",
-                success: function (result) {
+                success: function(result) {
                     if (result.status == 0) {
                         var data = result.data;
                         console.log(data);
@@ -701,7 +712,7 @@ function getGgLeaders() {
                 data: JSON.stringify(codes),
                 async: false,
                 contentType: "application/json;charset=utf-8",
-                success: function (result) {
+                success: function(result) {
                     if (result.status == 0) {
                         if (result.data.length > 0) {
                             for (var i = 0; i < result.data.length; i++) {
@@ -720,7 +731,7 @@ function getGgLeaders() {
                         $("[name='zzLeadersStr']").val("");
                     }
                 },
-                error: function (result) { }
+                error: function(result) {}
             });
 
         }
