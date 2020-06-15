@@ -46,7 +46,7 @@ $(function() {
 
     }
 
-    getGgLeaders();
+    getManagerLeaders();
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'table_3pmC',
         colArr: [{
@@ -136,15 +136,6 @@ function clearTable() {
 }
 //惩罚
 
-// 省份初始化
-function initProvAndCity() {
-
-    $.each(cityJson, function(i, val) {
-        if (val.item_code.substr(2, 4) == '0000') {}
-    });
-
-}
-
 function StringBuffer(str) {
     var arr = [];
     str = str || "";
@@ -206,7 +197,7 @@ function queryCompanyCode() {
                 }
             }
             //             初始化公司代码
-            $("#theCompany").find("option[value='selectOption']").after(sb.toString());
+            $("[name='theCompany']").find("option[value='selectOption']").after(sb.toString());
             common.initSelect();
         }
     })
@@ -708,54 +699,77 @@ function check_before_submit() {
         }
         setOpnionByActivity();
         setLeadersAndL5();
-        getGgLeaders();
+        getManagerLeaders();
     }
     giveCompanyChooseUser();
     return true;
 }
 // 获得直级领导
-function getGgLeaders() {
-    var zzLeadersStr = $("[name='zzLeaders']").val();
-    if (!zzLeadersStr) {
+function getManagerLeaders() {
+    var activityName = $("#activityName").val();
+    var pageType = $("#pageType").val();
+    var zzLeadersStr = $("[name='zLeaders']").val();
+    var gLeaders = $("[name='gLeaders']").val();
+    var gLeaderNos = "";
 
-        // if (activityName = "被奖惩人隔级审批") {
-        var gLeadersCodes = $("[name='gLeaders']").val();
-        var zzLeadersStr = "";
-
-        if (gLeadersCodes) {
-            var str = gLeadersCodes.substring(0, gLeadersCodes.length - 1);
-            var codes = str.split(";");
-
-            $.ajax({
-                url: common.getPath() + '/selectUser/getLeadesByUserId',
-                type: 'post',
-                dataType: 'json',
-                data: JSON.stringify(codes),
-                async: false,
-                contentType: "application/json;charset=utf-8",
-                success: function(result) {
-                    if (result.status == 0) {
-                        if (result.data.length > 0) {
-                            for (var i = 0; i < result.data.length; i++) {
-                                var leaders = result.data[i];
-                                if (leaders.zUserUid == "" && leaders.curUserInfo.managernumber == "00000001") {
-                                    zzLeadersStr += leaders.curUserInfo.managernumber + ";";
-                                } else {
-                                    zzLeadersStr += leaders.zUserUid + ";";
-                                }
+    var detailUrl = $("[name='pageDetailUrl']").val();
+    var codes = [];
+    if (activityName == "奖惩申报人提报流程" && pageType == 'approval' && detailUrl) {
+        $("[name='table_3pmC'] tbody").find("tr").each(function() {
+            var userNo = $(this).find("td[data-label='处罚人员']").find("input[type=hidden]").val();
+            if (userNo) {
+                codes.push(userNo);
+            }
+        });
+    }
+    if (zzLeadersStr && !gLeaders) {
+        // var gLeadersCodes = $("[name='gLeaders']").val();
+        // if (gLeadersCodes) {
+        var str = zzLeadersStr.substring(0, zzLeadersStr.length - 1);
+        codes = str.split(";");
+        // }
+    }
+    if (codes.length > 0) {
+        $.ajax({
+            url: common.getPath() + '/selectUser/getLeadesByUserId',
+            type: 'post',
+            dataType: 'json',
+            data: JSON.stringify(codes),
+            async: false,
+            contentType: "application/json;charset=utf-8",
+            success: function(result) {
+                if (result.status == 0) {
+                    if (result.data.length > 0) {
+                        for (var i = 0; i < result.data.length; i++) {
+                            var leaders = result.data[i];
+                            var zleader = leaders.zUserUid;
+                            var managernumber = leaders.curUserInfo.managernumber;
+                            var companynumber = leaders.curUserInfo.companynumber;
+                            if (!zleader && managernumber == "00000001") {
+                                gLeaderNos += "00000001;";
+                            } else {
+                                gLeaderNos += zleader + ";";
                             }
+                            $("[name='table_3pmC'] tbody").find("tr").each(function() {
+                                var userNo = $(this).find("td[data-label='处罚人员']").find("input[type=hidden]").val();
+                                if (userNo == leaders.curUserInfo.userNo) {
+
+                                    if (!zleader && managernumber == "00000001") {
+                                        zleader = "00000001";
+                                    }
+                                    $(this).find("td[data-label='上级员工号']").find("input").val(zleader);
+                                    $(this).find("td[data-label='公司编码']").find("input").val(companynumber);
+                                }
+                            });
                         }
                     }
-                    if (zzLeadersStr) {
-                        $("[name='zzLeadersStr']").val(zzLeadersStr);
-                    } else {
-                        $("[name='zzLeadersStr']").val("");
-                    }
-                },
-                error: function(result) {}
-            });
-
-        }
+                }
+                if (gLeaderNos && !gLeaders) {
+                    $("[name='gLeaders']").val(gLeaderNos);
+                }
+            },
+            error: function(result) {}
+        });
     }
 }
 function rowChangeEvent(obj) {
