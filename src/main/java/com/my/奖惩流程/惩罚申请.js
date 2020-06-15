@@ -1,5 +1,4 @@
-{/* <script type='text/javascript'>  */
-}
+// <script type='text/javascript'>
 var taskId = $("#taskId").val();
 var needJudgeArr = ['审核奖惩申请(地区总经理)', '审核奖惩申请(运营发展副总裁)', '被奖惩人上级审批', '被奖惩人隔级审批', '奖惩最终审批'];
 //获得当前登录人
@@ -90,11 +89,22 @@ function judgeNeiQin(obj) {
             colNum: 1
         });
         $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").show();
-        // 是内勤就隐藏所属公司代码
+        // 隐藏组件
         formUtil.changeHiddenByName("theCompany");
-        // 隐藏必填公司代码
+        // 隐藏必填
         formUtil.changeHiddenMustByName("theCompany");
+        // 不可编辑
         formUtil.changeNotEditByName("theCompany");
+        // 显示上级员工号
+        formUtil.tableFun.changeShowMustByTableParam({
+            name: 'table_3pmC',
+            colNum: 7
+        });
+        // 显示隔级员工号
+        formUtil.tableFun.changeShowMustByTableParam({
+            name: 'table_3pmC',
+            colNum: 9
+        });
     } else {
         $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
         $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
@@ -105,6 +115,16 @@ function judgeNeiQin(obj) {
         // 显示必填公司代码
         formUtil.changeShowMustByName("theCompany");
         formUtil.changeEditByName("theCompany");
+        // 隐藏上级员工号
+        formUtil.tableFun.changeHiddenMustByTableParam({
+            name: 'table_3pmC',
+            colNum: 7
+        });
+        // 隐藏隔级员工号
+        formUtil.tableFun.changeHiddenMustByTableParam({
+            name: 'table_3pmC',
+            colNum: 9
+        });
     }
 
 }
@@ -690,6 +710,7 @@ function check_before_submit() {
         setLeadersAndL5();
         getGgLeaders();
     }
+    giveCompanyChooseUser();
     return true;
 }
 // 获得直级领导
@@ -841,5 +862,11 @@ function setTotalMoney() {
 function rowRemoveChangeAfter(obj) {
     setTotalMoney();
 }
-
+function giveCompanyChooseUser() {
+    var code = $("[name='theCompany']").val();
+    var judgeNeiQin = $("[name='judgeNeiQin']").val();
+    if ("1" == judgeNeiQin) {
+        $("[name='companyNum']").val(code);
+    }
+}
 // </script>
