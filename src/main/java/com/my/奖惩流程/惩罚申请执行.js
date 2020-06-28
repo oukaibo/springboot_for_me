@@ -34,6 +34,7 @@ $(function() {
         })
 
     }
+    $("[name='isPunishFranchiseeHidden']").val("0");
     $("[name='noticeType']").val("punish");
 });
 function check_before_submit() {
@@ -45,6 +46,9 @@ function check_before_submit() {
                 icon: 2
             });
             return false;
+        }
+        if (isPunishFranchisee == '0') {
+            $("[name='isPunishFranchiseeHidden']").val("1");
         }
     }
     return true;
