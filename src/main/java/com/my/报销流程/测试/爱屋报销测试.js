@@ -5177,6 +5177,14 @@ function getProjectInfoByProjectNo(obj) {
 		$("[name='itemCode']").val(obj.projectNumInput);
 		$("[name='text_NT5r']").val(obj.abbreviation);
 		$("[name='text_drR4']").val(obj.projectLeader);
+		var projectLeader = obj.projectLeader
+		var signIndex = projectLeader.indexOf("(");
+		var endIndex = projectLeader.indexOf(")");
+		if (signIndex != -1) {
+			var leaderCode = projectLeader.substring(signIndex + 1, projectLeader.length - 1);
+			$("[name='projectManager']").val(leaderCode);
+		}
+
 	}
 
 }
