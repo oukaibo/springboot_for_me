@@ -36,5 +36,17 @@ $(function() {
     }
     $("[name='noticeType']").val("punish");
 });
-
+function check_before_submit() {
+    var judgeNeiQin = $("[name='judgeNeiQin']").val();
+    if ("1" == judgeNeiQin) {
+        var isPunishFranchisee = $("[name='isPunishFranchisee']").val();
+        if (!isPunishFranchisee) {
+            layer.msg("非内勤必须填写是否处罚加盟商字段", {
+                icon: 2
+            });
+            return false;
+        }
+    }
+    return true;
+}
 // </script>

@@ -89,12 +89,13 @@ function judgeNeiQin(obj) {
             colNum: 1
         });
         $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").show();
-        // 隐藏组件
+        // 处理非内勤所属公司
         formUtil.changeHiddenByName("theCompany");
-        // 隐藏必填
         formUtil.changeHiddenMustByName("theCompany");
-        // 不可编辑
         formUtil.changeNotEditByName("theCompany");
+        // 是否处罚加盟商
+        formUtil.changeHiddenByName("isPunishFranchisee");
+        formUtil.changeHiddenMustByName("isPunishFranchisee");
         // 显示上级员工号
         formUtil.tableFun.changeShowMustByTableParam({
             name: 'table_3pmC',
@@ -112,9 +113,11 @@ function judgeNeiQin(obj) {
 
         // 是内勤就显示所属公司代码
         formUtil.changeShowByName("theCompany");
-        // 显示必填公司代码
         formUtil.changeShowMustByName("theCompany");
         formUtil.changeEditByName("theCompany");
+        // 选否时必填是否处罚加盟商
+        formUtil.changeShowByName(isPunishFranchisee);
+        formUtil.changeShowMustByName("isPunishFranchisee");
         // 隐藏上级员工号
         formUtil.tableFun.changeHiddenMustByTableParam({
             name: 'table_3pmC',
