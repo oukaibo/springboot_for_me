@@ -360,22 +360,22 @@ function check_before_submit() {
         var copyUser = "";
         var companyCodeHaHaHa = "";
         for (var i = 0; i < userPunish.length; i++) {
-            var userId = userPunish[i].find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
+            var userId = $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='处罚人员']").not(".no_data").find('input[type=hidden]').val();
             if (userId) {
                 copyUser += userId + ";";
             }
-            var zleaderCode = userPunish[i].find("td[data-label='上级员工号']").not(".no_data").find('input').val();
+            var zleaderCode = $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='上级员工号']").not(".no_data").find('input').val();
             if (zleaderCode) {
 
                 zUserUidsStr += zleaderCode + ";";
                 zleaderCodes.push(zleaderCode);
             }
-            var gLeaderCode = userPunish[i].find("td[data-label='隔级员工号']").not(".no_data").find('input').val();
+            var gLeaderCode = $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='隔级员工号']").not(".no_data").find('input').val();
             if (gLeaderCode != "") {
                 gUserUidsStr += gLeaderCode + ";";
                 gLeaderCodes.push(gLeaderCode);
             }
-            var companyCodeHaHa = userPunish[i].find("td[data-label='公司编码']").not(".no_data").find('input').val();
+            var companyCodeHaHa = $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='公司编码']").not(".no_data").find('input').val();
             if (companyCodeHaHa) {
                 companyCodeHaHaHa += companyCodeHaHa + ";";
             }
