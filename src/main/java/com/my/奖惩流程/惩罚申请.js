@@ -50,16 +50,24 @@ $(function() {
     formUtil.tableFun.giveTableColSetWidth({
         tableName: 'table_3pmC',
         colArr: [{
-            'table_3pmC_hb': '500px'
+            'rewardName1': '200px'
         }, {
-            'table_3pmC_7': '500px'
+            'userNo1': '100px'
+        }, {
+            'adminiReward1': '100px'
+        }, {
+            'rewardBonus1': '100px'
+        }, {
+            'indemnity1': '100px'
+        }, {
+            'manpowerPunish1': '100px'
         }]
     });
-    formUtil.tableFun.givePCTableSetWidth({
-        "tableWidthJson": {
-            "table_3pmC": "2500px"
-        }
-    });
+    // formUtil.tableFun.givePCTableSetWidth({
+    // "tableWidthJson": {
+    // "table_3pmC": "2500px"
+    // }
+    // });
     // 加载公司代码
     queryCompanyCode();
     judgeNeiQin();
@@ -80,7 +88,7 @@ function isNeiKongZhiSong(obj) {
 
 // 是否内勤
 function judgeNeiQin(obj) {
-
+    var activityName = $("#activityName").val();
     var val = $("[name='judgeNeiQin']").val();
     // 是内勤
     if (val == "0") {
@@ -107,16 +115,19 @@ function judgeNeiQin(obj) {
             colNum: 9
         });
     } else {
-        $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
-        $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
-        $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
 
         // 是内勤就显示所属公司代码
         formUtil.changeShowByName("theCompany");
         formUtil.changeShowMustByName("theCompany");
-        formUtil.changeEditByName("theCompany");
+        if (activityName == '奖惩申报人提报流程') {
+            formUtil.changeEditByName("theCompany");
+            $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
+            $("[name='table_3pmC'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
+            $("[name='table_3pmC']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
+        }
+
         // 选否时必填是否处罚加盟商
-        formUtil.changeShowByName(isPunishFranchisee);
+        formUtil.changeShowByName("isPunishFranchisee");
         formUtil.changeShowMustByName("isPunishFranchisee");
         // 隐藏上级员工号
         formUtil.tableFun.changeHiddenMustByTableParam({
