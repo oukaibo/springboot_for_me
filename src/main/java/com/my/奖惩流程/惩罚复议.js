@@ -147,6 +147,7 @@ function accordingActivityHideOpnionField() {
 
 // 是否内勤
 function judgeNeiQin(obj) {
+    var activityName = $("#activityName").val();
     var val = $("[name='judgeNeiQin']").val();
     if (val == "0") {
         // 是内勤
@@ -182,14 +183,16 @@ function judgeNeiQin(obj) {
         });
     } else {
         // 非内勤
-        $("[name='table_WZJ6'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
-        $("[name='table_WZJ6'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
-        $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
-
+        if (activityName == '奖惩复议申报人提出复议') {
+            $("[name='table_WZJ6'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("readonly");
+            $("[name='table_WZJ6'] tbody").find("tr").find("td[data-label='处罚人员']").find("input[type='text']").removeAttr("disabled");
+            $("[name='table_WZJ6']").find("tbody").find("tr").find("td[data-label='处罚人员']").find("i").hide();
+            formUtil.changeEditByName("theCompany");
+        }
         // 所属公司代码
         formUtil.changeShowByName("theCompany");
         formUtil.changeShowMustByName("theCompany");
-        formUtil.changeEditByName("theCompany");
+
         // 是否处罚加盟商
         formUtil.changeShowByName("isPunishFranchisee");
         formUtil.changeShowMustByName("isPunishFranchisee");
