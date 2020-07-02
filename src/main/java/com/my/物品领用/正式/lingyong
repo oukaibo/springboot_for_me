@@ -39,7 +39,7 @@ $(function() {
     c12 = trCObj0.find("td[data-label='卡券面值']").index();
     c13 = trCObj0.find("td[data-label='领用方式']").index();
     c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index();
-    c15 = trCObj0.find("td[data-label='收获地址']").index();
+    c15 = trCObj0.find("td[data-label='收货地址']").index();
     c16 = trCObj0.find("td[data-label='收货人']").index();
     c17 = trCObj0.find("td[data-label='寄货人']").index();
     c18 = trCObj0.find("td[data-label='快递单号']").index();
@@ -62,7 +62,7 @@ $(function() {
         c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
         c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
         c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
-        c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+        c15 = trCObj0.find("td[data-label='收货地址']").index() - 2;
         c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
         c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
         c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
@@ -1384,7 +1384,7 @@ function judgeIsOverBudget() {
         var costCenter = $(this).find("td[data-label='成本中心代码']").find("input[type='text']").val();
         var controlType = $(this).find("td[data-label='预算控制模式']").find("input").val();
         var budget = parseFloat($(this).find("td[data-label='成本中心预算']").find("input").val());
-        if (activityName == "库存管理员领用和出库") {
+        if (activityName == "库存管理员领用和出库" || activityName == "进行出库开单") {
             var alreadyForzenMoney2 = parseFloat($("[name='alreadyForzenMoney']").val());
             var alreadyForzenMoney3 = isNaN(alreadyForzenMoney2)
             alreadyForzenMoney = alreadyForzenMoney3 ? 0 : alreadyForzenMoney2;
@@ -1413,6 +1413,7 @@ function judgeIsOverBudget() {
             flag = true;
         } else {
             var finalCanUseBudget = budget + alreadyForzenMoney;
+            amount = amount.toFixed(2);
             if (amount <= finalCanUseBudget) {
                 flag = true;
             } else {
@@ -1638,7 +1639,7 @@ function rowChangeEvent(obj, sign) {
         c12 = trCObj0.find("td[data-label='卡券面值']").index();
         c13 = trCObj0.find("td[data-label='领用方式']").index();
         c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index();
-        c15 = trCObj0.find("td[data-label='收获地址']").index();
+        c15 = trCObj0.find("td[data-label='收货地址']").index();
         c16 = trCObj0.find("td[data-label='收货人']").index();
         c17 = trCObj0.find("td[data-label='寄货人']").index();
         c18 = trCObj0.find("td[data-label='快递单号']").index();
@@ -1661,7 +1662,7 @@ function rowChangeEvent(obj, sign) {
             c12 = trCObj0.find("td[data-label='卡券面值']").index() - 2;
             c13 = trCObj0.find("td[data-label='领用方式']").index() - 2;
             c14 = trCObj0.find("td[data-label='期望最晚邮寄时间']").index() - 2;
-            c15 = trCObj0.find("td[data-label='收获地址']").index() - 2;
+            c15 = trCObj0.find("td[data-label='收货地址']").index() - 2;
             c16 = trCObj0.find("td[data-label='收货人']").index() - 2;
             c17 = trCObj0.find("td[data-label='寄货人']").index() - 2;
             c18 = trCObj0.find("td[data-label='快递单号']").index() - 2;
@@ -1740,7 +1741,14 @@ function getItemBudget() {
 }
 function getBudget1() {
     var bussinessName = $("[name='bussiness_name']").val();
-    var month = (new Date()).getMonth() + 1;
+    var insInitDate = $("#insInitDate").val();
+    var pageType = $("#pageType").val();
+    var month = 0;
+    if (pageType == 'startProcess') {
+        month = (new Date()).getMonth() + 1;
+    } else {
+        month = (new Date(insInitDate)).getMonth() + 1;
+    }
     var costCenter = [];
     var itemCode = $("[name='itemCode']").val();
     if (itemCode == null || itemCode == undefined) {
