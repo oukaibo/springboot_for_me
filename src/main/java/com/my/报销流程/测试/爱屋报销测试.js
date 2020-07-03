@@ -230,8 +230,7 @@ function fileUploadSetStoreName(storeCodeArr) {
 				layer.alert(result.msg);
 			}
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 }
 
@@ -364,6 +363,8 @@ function setApprovalPower() {
 	} else {
 		tableName = "reimburseDetail";
 	}
+	// 伊逗互娱（上海）网络科技有限公司
+	var yiDouHuYuCenter = ['1304040000', '1304030000', '1304010000'];
 	//非项目预算公司编码跟费用明细成本中心走
 	if (isProject == '1') {
 		$("[name='" + tableName + "'] tbody").find("tr").each(function() {
@@ -375,27 +376,52 @@ function setApprovalPower() {
 		var projectCostCenter = $("[name='projectCostCenter']").val();
 		costcenterArr.push(projectCostCenter);
 	}
-	if (costcenterArr.indexOf("1304040000") != -1 || costcenterArr.indexOf("1305050000") != -1) {
+	var isYiDouHuYu = false;
+	for (var i = 0; i < costcenterArr.length; i++) {
+		if (yiDouHuYuCenter.indexOf(costcenterArr[i]) != -1) {
+			isYiDouHuYu = true;
+			break;
+		}
+	}
+	// specialSituation 这个字段主要用来看是走哪条线
+	if (isYiDouHuYu) {
+		// 到部门经理2环节
 		$("[name='specialSituation']").not(".no_data").val("1");
 	} else {
 		if (isProject == '0') {
+			// 到项目经理环节
 			$("[name='specialSituation']").not(".no_data").val("2");
+		} else if (bussinessName == 'RL02' || bussinessName == 'RL10') {
+			// RL02-支付薪资 RL10-支付社保、公积金
+			// 走人事经理这条线
+			$("[name='specialSituation']").not(".no_data").val("3");
 		} else {
+			// 到部门经理1环节
 			$("[name='specialSituation']").not(".no_data").val("0");
 		}
 
 	}
 
+	// quota 区分是否需要直接到财务
+	// RL12日常管理报销 RL13 年度报销  BM011 定额市内车费
 	if (bussinessName == 'BM011' || bussinessName == 'RL12' || bussinessName == 'RL13') {
+		// 是否职能联签
 		$("[name='quota']").not(".no_data").val("1");
 	} else {
+		// 项目经理环节、部门经理2环节、人事经理
 		$("[name='quota']").not(".no_data").val("0");
 	}
+	// 是否职能联签 isFunctional
+	// RL02-支付薪资 RL10-支付社保、公积金 RL11-人力外包服务费 RL01 离职补偿金发放、残疾人保障金支付
 	if (bussinessName == 'RL01' || bussinessName == 'RL02' || bussinessName == 'RL10' || bussinessName == 'RL11') {
+		// 人力
 		$("[name='isFunctional']").not(".no_data").val("1");
+
 	} else if (bussinessName == 'BM08' || bussinessName == 'YY02' || bussinessName == 'YY03') {
+		// 法务
 		$("[name='isFunctional']").not(".no_data").val("2");
 	} else if (bussinessName == 'RL03') {
+		// 行政
 		$("[name='isFunctional']").not(".no_data").val("3");
 	} else {
 		$("[name='isFunctional']").not(".no_data").val("0");
@@ -410,6 +436,7 @@ function setApprovalPower() {
 	// 额外授权
 	setNewApproval();
 	if (writeOffLoan == '0' && total == 0) {
+		// 是否只能联签
 		$("[name='quota']").not(".no_data").val("1");
 	}
 }
@@ -472,8 +499,7 @@ function setNewApproval() {
 					}
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -497,8 +523,7 @@ function setBussinessOption() {
 			common.initSelect();
 			setBussinessChildOption("[name='subject_type']");
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 	console.log("setBussinessOption:" + (Date.now() - num));
 }
@@ -533,8 +558,7 @@ function setBussinessChildOption(obj) {
 				layui.form.render();
 			}
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 	setReimburseTypeByBusinessName("[name='bussiness_name']");
 }
@@ -566,8 +590,7 @@ function setReimburseTypeByBusinessName(obj) {
 					return;
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	} else {
 		return;
@@ -3122,7 +3145,7 @@ function getLinInfoByCode(obj) {
 						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='开户行名称']").not(".no_data").find('input').val(data[0].text);
 
 						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='转账金额']").not(".no_data").find('input').val(zhuanzhangMoney);
-						$("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='附言']").not(".no_data").find('input').val(remark);
+						// $("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='附言']").not(".no_data").find('input').val(remark);
 
 						setSinkRoadByTotal($("[name = 'payees'] tbody ").find("tr").eq(i).find("td[data-label='转账金额']").not(".no_data").find('input'));
 
@@ -3361,7 +3384,7 @@ function getSysAwBankInfo(obj) {
 							$(this).find("td[data-label='开户行行号']").not(".no_data").find('input').val(data.zzhangh);
 							$(this).find("td[data-label='开户行名称']").not(".no_data").find('input').val(data.text);
 							$(this).find("td[data-label='转账金额']").not(".no_data").find('input').val(amount);
-							$(this).find("td[data-label='附言']").not(".no_data").find('input').val(remark);
+							// $(this).find("td[data-label='附言']").not(".no_data").find('input').val(remark);
 							$(this).find("td[data-label='收款人账户类型']").not(".no_data").find('select').val("1");
 							$(this).find("td[data-label='汇路']").not(".no_data").find('select').val("6");
 							return;
@@ -3960,8 +3983,7 @@ function setCostCenterByUserId(obj) {
 				layer.alert("该员工不存在,请重新确认");
 			}
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 
 	if (departmentId) {
@@ -3993,8 +4015,7 @@ function setCostCenterByUserId(obj) {
 					layer.alert(result.msg);
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -4787,8 +4808,7 @@ function judgeInvoiceNumberExistForOcr(name) {
 					}
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -4933,8 +4953,7 @@ function getVoucherMakerAndAuditer() {
 					layer.alert("凭证制单人以及凭证审核人查询接口调用失败");
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 	console.log("getVoucherMakerAndAuditer:" + (Date.now() - num));
@@ -5579,8 +5598,7 @@ function getMealAllowanceByUserId(obj) {
 					layer.alert(result.msg);
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -5727,8 +5745,7 @@ function queryUserReimburseScore() {
 					}
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 
@@ -5906,8 +5923,7 @@ function createRBNoInForm() {
 					setInsTitleByBussinessName("[name='bussiness_name']");
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -6015,8 +6031,7 @@ function judgeInvoiceNumbersExist() {
 						return flag;
 					}
 				},
-				error: function(result) {
-				}
+				error: function(result) {}
 			});
 			console.log("judgeInvoiceNumbersExist:" + (Date.now() - num));
 			return flag;
@@ -6099,8 +6114,7 @@ function judgeInvoiceNumberExist(obj) {
 					});
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	} else {
 		layer.alert("发票号请以;结尾,否则不能识别,请重新确认");
@@ -6362,8 +6376,7 @@ function judgeAllCostCenterExist() {
 					});
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -6396,8 +6409,7 @@ function judgeCostCenterExist(obj) {
 				$("[name='" + tableName + "'] tbody").find("tr:eq(" + index + ")").find("td[data-label='成本中心名称']").find("input").val("");
 			}
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 }
 
@@ -6428,8 +6440,7 @@ function judgeCostCenterExistForProject(obj) {
 				$("[name='projectCostCenterName']").val("");
 			}
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 }
 
@@ -6835,8 +6846,7 @@ function _formContentLayuiOpen(param) {
 					});
 				}
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	} else if (param == 2) {
 		layer.open({
@@ -7183,8 +7193,7 @@ function getPurchaseOrdersMoney(obj) {
 			}
 
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 }
 
@@ -7271,8 +7280,7 @@ function judgeExistInBlacklist() {
 				}
 
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	} else {
 		return true;
@@ -7567,8 +7575,7 @@ function getPrepaidInfoInRB(obj) {
 				}
 
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -7613,8 +7620,7 @@ function qryLeagueByCode() {
 				}
 
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 
@@ -7756,8 +7762,7 @@ function setSubjectByReimburseType(obj) {
 				}
 
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 	}
 }
@@ -7851,8 +7856,7 @@ function getWerksIsFrozen() {
 				}
 
 			},
-			error: function(result) {
-			}
+			error: function(result) {}
 		});
 		return flag;
 	}
@@ -8099,8 +8103,7 @@ function judgeWriteOffLoanIsLessThanLoanAmount() {
 			}
 
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 	if (errorLoanArr.length > 0) {
 		layer.msg("借款单:" + errorLoanArr.toString() + "已全部冲销完毕,无需再进行冲销", {
@@ -8165,8 +8168,7 @@ function getStoreInfoByWriteOffLoan() {
 			}
 
 		},
-		error: function(result) {
-		}
+		error: function(result) {}
 	});
 }
 
